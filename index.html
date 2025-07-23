@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quizzo - Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 350px;
+    }
+
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      color: #333;
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 25px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .btn-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    .message {
+      color: red;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <img src="quiz-logo.png" alt="Quizzo Logo" class="logo" />
+    <h1>Quizzo</h1>
+    <p class="tagline">Unleash Your Inner Quizmaster</p>
+
+    <input type="email" id="email" placeholder="Enter Email" required />
+    <input type="password" id="password" placeholder="Enter Password" required />
+    <input type="text" id="username" placeholder="Enter Username" style="display: none;" />
+
+    <div class="btn-container">
+      <button class="btn" onclick="login()">Login</button>
+      <button class="btn" onclick="toggleSignup()">Sign Up</button>
+    </div>
+
+    <p class="message" id="message"></p>
+
+    <!-- Attribution -->
+    <a href="https://www.flaticon.com/free-icons/quiz" title="quiz icons" target="_blank"
+       style="font-size: 10px; color: gray; text-decoration: none; display: block; margin-top: 10px;">
+      Quiz icons created by Freepik - Flaticon
+    </a>
+  </div>
+
+  <script>
+    let isSignupMode = false;
+
+    function toggleSignup() {
+      isSignupMode = !isSignupMode;
+      const usernameInput = document.getElementById("username");
+      const signupBtn = document.querySelector(".btn-container .btn:last-child");
+      
+      if (isSignupMode) {
+        usernameInput.style.display = "block";
+        signupBtn.textContent = "Submit";
+        signupBtn.onclick = signup;
+      } else {
+        usernameInput.style.display = "none";
+        signupBtn.textContent = "Sign Up";
+        signupBtn.onclick = toggleSignup;
+      }
+    }
+
+    async function signup() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const username = document.getElementById("username").value;
+
+      if (!email || !password || !username) {
+        document.getElementById("message").innerText = "Please fill in all fields.";
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById("message").innerText = "Sign up successful! Please login.";
+          toggleSignup(); // Switch back to login mode
+        } else {
+          document.getElementById("message").innerText = data.error || "Sign up failed.";
+        }
+      } catch (error) {
+        document.getElementById("message").innerText = "Error connecting to server.";
+      }
+    }
+
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (!email || !password) {
+        document.getElementById("message").innerText = "Please enter email and password.";
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById("message").innerText = "Login successful!";
+          // Store user data in localStorage
+          localStorage.setItem('user', JSON.stringify(data));
+          
+          setTimeout(() => {
+            if (data.role === "admin") {
+              window.location.href = "admin.html";
+            } else {
+              window.location.href = "user.html";
+            }
+          }, 1000);
+        } else {
+          document.getElementById("message").innerText = data.error || "Invalid credentials.";
+        }
+      } catch (error) {
+        document.getElementById("message").innerText = "Error connecting to server.";
+      }
+    }
+  </script>
+</body>
+</html>

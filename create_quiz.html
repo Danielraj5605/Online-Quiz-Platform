@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Create Quiz - Teacher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #f4f6f9;
+      padding: 2rem;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .question-box {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      background-color: #fff;
+    }
+    .form-section {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="mb-4">Create a Quiz</h2>
+    <div class="form-section">
+      <form id="quizForm">
+        <div class="mb-3">
+          <label for="quizTitle" class="form-label">Quiz Title</label>
+          <input type="text" class="form-control" id="quizTitle" name="quizTitle" required>
+        </div>
+
+        <div id="questions-container"></div>
+        <button type="button" class="btn btn-secondary mb-3" onclick="addQuestion()">Add Question</button>
+
+        <div class="mb-3">
+          <label for="timeLimit" class="form-label">Time Limit (minutes)</label>
+          <input type="number" class="form-control" id="timeLimit" name="timeLimit" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Quiz</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let questionCount = 0;
+
+    function addQuestion() {
+      const container = document.getElementById('questions-container');
+      const qIndex = questionCount++;
+      const html = `
+        <div class="question-box">
+          <div class="mb-3">
+            <label>Question ${qIndex + 1}</label>
+            <input type="text" name="question${qIndex}" class="form-control" required>
+          </div>
+          ${[0,1,2,3].map(i => `
+            <div class="mb-2">
+              <input type="radio" name="correct${qIndex}" value="${i}" required>
+              <input type="text" name="option${qIndex}_${i}" class="form-control d-inline w-75 ms-2" placeholder="Option ${i + 1}" required>
+            </div>`).join('')}
+        </div>`;
+      container.insertAdjacentHTML('beforeend', html);
+    }
+
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById("quizTitle").value;
+      const timeLimit = document.getElementById("timeLimit").value;
+      const questions = [];
+
+      for (let i = 0; i < questionCount; i++) {
+        const question = document.querySelector(`[name=question${i}]`).value;
+        const correct = document.querySelector(`[name=correct${i}]:checked`).value;
+        const options = [0, 1, 2, 3].map(j =>
+          document.querySelector(`[name=option${i}_${j}]`).value
+        );
+        questions.push({ question, correct: parseInt(correct), options });
+      }
+
+      // Show loading state
+      const submitButton = this.querySelector('button[type="submit"]');
+      const originalText = submitButton.textContent;
+      submitButton.disabled = true;
+      submitButton.textContent = 'Saving...';
+
+      fetch("/api/save-quiz", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          time_limit: parseInt(timeLimit),
+          description: "Created via form",
+          questions
+        })
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.json().then(err => Promise.reject(err));
+        }
+        return res.json();
+      })
+      .then(data => {
+        alert("Quiz saved successfully!");
+        location.reload();
+      })
+      .catch(error => {
+        alert("Error saving quiz: " + (error.error || "Unknown error"));
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      });
+    });
+
+    addQuestion(); // Add first question by default
+  </script>
+</body>
+</html>

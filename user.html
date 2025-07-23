@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Dashboard - Quizzo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #e0f7fa, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      padding: 2rem;
+      position: relative;
+    }
+    .user-greeting {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    .quiz-card {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+      text-align: center;
+      cursor: pointer;
+    }
+    .quiz-card:hover {
+      transform: translateY(-5px);
+    }
+    .quiz-card h5 {
+      margin-bottom: 0.5rem;
+    }
+    .quiz-card p {
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .intro-box {
+      background-color: #3b72a3;
+      color: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 40px;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="user-greeting">Hello, <span id="userName">User</span></div>
+
+  <div class="intro-box text-center">
+    <h1>Welcome to Quizzo</h1>
+    <p>Select any quiz below to begin</p>
+  </div>
+
+  <div class="header">
+    <h2>Available Quizzes</h2>
+  </div>
+
+  <div class="quiz-grid" id="quizList">
+    <!-- Quizzes will be loaded here -->
+  </div>
+
+  <script>
+    // Extract name from localStorage email
+    const email = localStorage.getItem("user_email") || "user@gmail.com";
+    const name = email.split("@")[0];
+    document.getElementById("userName").innerText = name;
+
+    // Fetch quizzes
+    fetch("get_quizzes.php")
+      .then(res => res.json())
+      .then(data => {
+        const quizList = document.getElementById("quizList");
+        if (data.length === 0) {
+          quizList.innerHTML = "<p>No quizzes available.</p>";
+          return;
+        }
+
+        data.forEach(quiz => {
+          const card = document.createElement("div");
+          card.className = "quiz-card";
+          card.innerHTML = `
+            <h5>${quiz.title}</h5>
+            <p>Time: ${quiz.time_limit} minutes</p>
+          `;
+          card.onclick = () => {
+            window.location.href = `take_quiz.html?title=${encodeURIComponent(quiz.title)}`;
+          };
+          quizList.appendChild(card);
+        });
+      })
+      .catch(err => {
+        console.error("Error fetching quizzes:", err);
+      });
+  </script>
+</body>
+</html>
