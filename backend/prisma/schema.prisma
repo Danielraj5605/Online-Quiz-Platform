@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("user")
+  avatar    String?
+  isEmailVerified Boolean @default(false)
+  verificationToken String?
+  verificationTokenExpiry DateTime?
+  resetToken String?
+  resetTokenExpiry DateTime?
+  failedLoginAttempts Int @default(0)
+  lockUntil DateTime?
+  xp        Int      @default(0)
+  tier      String   @default("Bronze")
+  quizzes   Quiz[]   @relation("QuizCreator")
+  results   Result[]
+  attempts  Attempt[]
+  responses Response[]
+  badges    UserBadge[]
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Social features
+  following   Follow[]  @relation("Follower")
+  followers   Follow[]  @relation("Following")
+}
+
+model Badge {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String
+  icon        String   // Icon identifier (e.g., emoji or icon name)
+  criteria    String   // JSON describing how to earn
+  xpReward    Int      @default(100)
+  users       UserBadge[]
+  createdAt   DateTime @default(now())
+}
+
+model UserBadge {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  badgeId   Int
+  earnedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Follower", fields: [followerId], references: [id])
+  following   User     @relation("Following", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  quizId    Int
+  rating    Int      // 1-5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, quizId])
+}
+
+model DailyChallenge {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique
+  quizId      Int
+  xpBonus     Int      @default(200)
+  completedBy Int[]    @default([])
+  createdAt   DateTime @default(now())
+}
+
+model Quiz {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  category    String?
+  difficulty  String     @default("medium")
+  timeLimit   Int        @default(600)
+  maxAttempts Int?       // Null = unlimited attempts
+  isPublished Boolean    @default(false)
+  shuffleQuestions Boolean @default(false) // Randomize question order
+  availableFrom DateTime? // Scheduled availability start
+  availableUntil DateTime? // Scheduled availability end
+  isFlagged   Boolean    @default(false) // Flagged for moderation
+  flagReason  String?
+  creatorId   Int
+  creator     User       @relation("QuizCreator", fields: [creatorId], references: [id])
+  questions   Question[]
+  results     Result[]
+  responses   Response[]
+  attempts    Attempt[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Question {
+  id        Int      @id @default(autoincrement())
+  quizId    Int?
+  quiz      Quiz?    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  // If quizId is null, it's a global question from the question bank
+  text      String
+  order     Int      @default(0)
+  type      QuestionType @default(MULTIPLE_CHOICE)
+  options   Option[]
+  responses Response[]
+  // Analytics
+  timesShown    Int @default(0)  // How many times this question was shown
+  timesCorrect  Int @default(0)  // How many times answered correctly
+  avgTimeTaken  Float @default(0) // Average time to answer
+}
+
+model QuestionAnalytics {
+  id              Int      @id @default(autoincrement())
+  questionId      Int
+  totalAttempts   Int      @default(0)
+  correctAttempts  Int      @default(0)
+  avgTimeSeconds  Float    @default(0)
+  difficultyScore Float    @default(0.5) // 0-1, calculated from success rate
+  updatedAt       DateTime @updatedAt
+
+  @@index([questionId])
+}
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  action      String   // e.g., 'QUIZ_CREATED', 'USER_LOGIN', 'ADMIN_ACTION'
+  entityType  String?  // e.g., 'Quiz', 'User', 'Badge'
+  entityId    Int?
+  details     String?  // JSON string with additional details
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model FlaggedContent {
+  id          Int      @id @default(autoincrement())
+  contentType String   // QUIZ, QUESTION, USER
+  contentId   Int
+  reporterId  Int
+  reason      String
+  status      String   @default("PENDING") // PENDING, REVIEWED, DISMISSED
+  reviewedBy  Int?
+  reviewedAt  DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([contentType, contentId])
+}
+
+model Option {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean  @default(false)
+  responses  Response[]
+}
+
+model Result {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  quizId    Int
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score     Int
+  total     Int
+  timeTaken Int      @default(0)
+  correct   Int      @default(0)
+  attemptId Int? @unique
+  attempt   Attempt? @relation("AttemptResult", fields: [attemptId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+}
+
+model Attempt {
+  id         Int       @id @default(autoincrement())
+  userId     Int
+  quizId     Int
+  status     AttemptStatus @default(ACTIVE)
+  startedAt  DateTime  @default(now())
+  completedAt DateTime?
+  questionOrder Int[]   @default([])
+  user       User      @relation(fields: [userId], references: [id])
+  quiz       Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  responses  Response[]
+  result     Result?   @relation("AttemptResult")
+  @@unique([userId, quizId, status], name: "unique_active_attempt_per_user_quiz")
+  @@index([userId, quizId, status])
+}
+
+model Response {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  quizId     Int
+  questionId Int
+  optionId   Int
+  attemptId  Int?
+  user       User     @relation(fields: [userId], references: [id])
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  option     Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  attempt    Attempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, questionId, attemptId], map: "uniq_response_per_attempt")
+}
+
+enum AttemptStatus {
+  ACTIVE
+  COMPLETED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE  // Single correct answer, 2-6 options
+  TRUE_FALSE       // True or False
+  MULTI_SELECT     // Multiple correct answers
+  FILL_BLANK       // Text answer
+}

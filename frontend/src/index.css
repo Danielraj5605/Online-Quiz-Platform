@@ -1,0 +1,547 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;900&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════
+   ROYAL THEME SYSTEM — 5 majestic palettes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Midnight Crown (deep purple-blue, default) ─── */
+:root,
+[data-theme="royal-dark"] {
+  --bg:             #0d0a1e;
+  --bg-alt:         #100d22;
+  --surface:        #14102d;
+  --surface-2:      #1c1840;
+  --surface-3:      #241f52;
+  --border:         #2e2860;
+  --border-glow:    rgba(139, 92, 246, 0.35);
+
+  --primary:        #8b5cf6;
+  --primary-dim:    #7c3aed;
+  --primary-bright: #a78bfa;
+  --primary-glow:   rgba(139, 92, 246, 0.4);
+  --primary-subtle: rgba(139, 92, 246, 0.12);
+
+  --gold:           #d4af37;
+  --gold-dim:       #b8960a;
+  --gold-bright:    #f4d03f;
+  --gold-glow:      rgba(212, 175, 55, 0.35);
+
+  --accent:         #06b6d4;
+  --accent-warm:    #d4af37;
+
+  --success:        #10b981;
+  --error:          #ef4444;
+  --warning:        #f59e0b;
+
+  --text:           #f0eaff;
+  --text-secondary: #a89ecb;
+  --text-muted:     #6b5f8a;
+
+  --nav-bg:         rgba(13, 10, 30, 0.93);
+  --card-shine:     linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ─── 2. Golden Palace (deep amber/champagne) ─── */
+[data-theme="royal-gold"] {
+  --bg:             #120c02;
+  --bg-alt:         #160f04;
+  --surface:        #1e1408;
+  --surface-2:      #2a1d0b;
+  --surface-3:      #382608;
+  --border:         #4d3610;
+  --border-glow:    rgba(212, 175, 55, 0.35);
+
+  --primary:        #d4af37;
+  --primary-dim:    #b8960a;
+  --primary-bright: #f4d03f;
+  --primary-glow:   rgba(212, 175, 55, 0.4);
+  --primary-subtle: rgba(212, 175, 55, 0.12);
+
+  --gold:           #d4af37;
+  --gold-dim:       #b8960a;
+  --gold-bright:    #f4d03f;
+  --gold-glow:      rgba(212, 175, 55, 0.4);
+
+  --accent:         #e07b39;
+  --accent-warm:    #d4af37;
+
+  --success:        #22c55e;
+  --error:          #ef4444;
+  --warning:        #f97316;
+
+  --text:           #fff8e8;
+  --text-secondary: #c8b26a;
+  --text-muted:     #7a6230;
+
+  --nav-bg:         rgba(18, 12, 2, 0.93);
+  --card-shine:     linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ─── 3. Amethyst Court (bright violet-pink) ─── */
+[data-theme="royal-violet"] {
+  --bg:             #0f0a1a;
+  --bg-alt:         #130d1f;
+  --surface:        #1a1128;
+  --surface-2:      #231535;
+  --surface-3:      #2f1d48;
+  --border:         #4a2d70;
+  --border-glow:    rgba(192, 132, 252, 0.35);
+
+  --primary:        #c084fc;
+  --primary-dim:    #a855f7;
+  --primary-bright: #e879f9;
+  --primary-glow:   rgba(192, 132, 252, 0.4);
+  --primary-subtle: rgba(192, 132, 252, 0.12);
+
+  --gold:           #e879f9;
+  --gold-dim:       #c026d3;
+  --gold-bright:    #f0abfc;
+  --gold-glow:      rgba(232, 121, 249, 0.35);
+
+  --accent:         #818cf8;
+  --accent-warm:    #e879f9;
+
+  --success:        #10b981;
+  --error:          #f87171;
+  --warning:        #fbbf24;
+
+  --text:           #fdf4ff;
+  --text-secondary: #c4a8e0;
+  --text-muted:     #7a5e9a;
+
+  --nav-bg:         rgba(15, 10, 26, 0.93);
+  --card-shine:     linear-gradient(135deg, rgba(192,132,252,0.08) 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ─── 4. Emerald Throne (deep forest green) ─── */
+[data-theme="royal-emerald"] {
+  --bg:             #041210;
+  --bg-alt:         #061615;
+  --surface:        #0c1f1c;
+  --surface-2:      #122b27;
+  --surface-3:      #173832;
+  --border:         #1e5047;
+  --border-glow:    rgba(16, 185, 129, 0.35);
+
+  --primary:        #10b981;
+  --primary-dim:    #059669;
+  --primary-bright: #34d399;
+  --primary-glow:   rgba(16, 185, 129, 0.4);
+  --primary-subtle: rgba(16, 185, 129, 0.12);
+
+  --gold:           #d4af37;
+  --gold-dim:       #b8960a;
+  --gold-bright:    #f4d03f;
+  --gold-glow:      rgba(212, 175, 55, 0.35);
+
+  --accent:         #06b6d4;
+  --accent-warm:    #d4af37;
+
+  --success:        #34d399;
+  --error:          #f87171;
+  --warning:        #fbbf24;
+
+  --text:           #ecfdf5;
+  --text-secondary: #6ee7b7;
+  --text-muted:     #2d6c5c;
+
+  --nav-bg:         rgba(4, 18, 16, 0.93);
+  --card-shine:     linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ─── 5. Pearl Kingdom (light mode) ─── */
+[data-theme="royal-light"] {
+  --bg:             #f8f4ff;
+  --bg-alt:         #f2ecff;
+  --surface:        #ffffff;
+  --surface-2:      #f5f0ff;
+  --surface-3:      #ede5ff;
+  --border:         #d4c8f5;
+  --border-glow:    rgba(124, 58, 237, 0.2);
+
+  --primary:        #7c3aed;
+  --primary-dim:    #6d28d9;
+  --primary-bright: #8b5cf6;
+  --primary-glow:   rgba(124, 58, 237, 0.25);
+  --primary-subtle: rgba(124, 58, 237, 0.08);
+
+  --gold:           #b8960a;
+  --gold-dim:       #9a7d07;
+  --gold-bright:    #d4af37;
+  --gold-glow:      rgba(184, 150, 10, 0.25);
+
+  --accent:         #0284c7;
+  --accent-warm:    #b8960a;
+
+  --success:        #059669;
+  --error:          #dc2626;
+  --warning:        #d97706;
+
+  --text:           #1e1040;
+  --text-secondary: #5b4a8a;
+  --text-muted:     #9580c4;
+
+  --nav-bg:         rgba(248, 244, 255, 0.95);
+  --card-shine:     linear-gradient(135deg, rgba(124,58,237,0.05) 0%, rgba(255,255,255,0) 60%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL DESIGN TOKENS
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --font-heading: 'Space Grotesk', 'Cinzel', sans-serif;
+  --font-royal:   'Cinzel', serif;
+  --font-body:    'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  --radius-xs:  6px;
+  --radius-sm:  10px;
+  --radius-md:  14px;
+  --radius-lg:  18px;
+  --radius-xl:  24px;
+
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md:  0 6px 24px rgba(0,0,0,0.4);
+  --shadow-lg:  0 16px 48px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 24px var(--primary-glow);
+  --shadow-gold: 0 0 24px var(--gold-glow);
+
+  font-family: var(--font-body);
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--text);
+  background-color: var(--bg);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 10% 0%,   var(--primary-subtle) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 100%, var(--gold-glow) 0%,         transparent 40%),
+    radial-gradient(ellipse at 50% 50%,  rgba(0,0,0,0.15) 0%,         transparent 100%);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+
+#root { min-height: 100vh; }
+
+/* ═══════════════════════════════════════════════════════════════
+   ROYAL ORNAMENT / DIVIDER
+   ═══════════════════════════════════════════════════════════════ */
+.royal-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  color: var(--gold);
+  opacity: 0.5;
+}
+.royal-divider::before,
+.royal-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARD STYLES
+   ═══════════════════════════════════════════════════════════════ */
+.card-royal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+.card-royal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--card-shine);
+  pointer-events: none;
+}
+.card-royal:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--border-glow);
+  transform: translateY(-1px);
+  transition: all 0.25s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUTTON STYLES
+   ═══════════════════════════════════════════════════════════════ */
+.btn-royal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.02em;
+}
+.btn-royal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+  pointer-events: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-dim), var(--primary-bright));
+  color: #fff;
+  box-shadow: 0 4px 14px var(--primary-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--primary-glow);
+  filter: brightness(1.08);
+}
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold-bright));
+  color: #1a1000;
+  box-shadow: 0 4px 14px var(--gold-glow);
+}
+.btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--gold-glow);
+  filter: brightness(1.08);
+}
+.btn-ghost {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: var(--surface-3);
+  border-color: var(--primary);
+  color: var(--primary-bright);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INPUT STYLES
+   ═══════════════════════════════════════════════════════════════ */
+.input-royal {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-body);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.input-royal::placeholder { color: var(--text-muted); }
+.input-royal:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-subtle);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BADGE & TIER CHIPS
+   ═══════════════════════════════════════════════════════════════ */
+.badge-royal {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--primary-subtle);
+  color: var(--primary-bright);
+  border: 1px solid var(--border-glow);
+}
+.badge-gold {
+  background: rgba(212, 175, 55, 0.15);
+  color: var(--gold-bright);
+  border-color: var(--gold-glow);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════════════ */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+@keyframes confetti {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+@keyframes slide-in-right {
+  0%   { transform: translateX(30px); opacity: 0; }
+  100% { transform: translateX(0);    opacity: 1; }
+}
+@keyframes slide-out-left {
+  0%   { transform: translateX(0);    opacity: 1; }
+  100% { transform: translateX(-30px);opacity: 0; }
+}
+@keyframes pop-in {
+  0%   { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%       { box-shadow: var(--shadow-glow); }
+}
+@keyframes bounce-in {
+  0%   { transform: scale(0.3); opacity: 0; }
+  50%  { transform: scale(1.05); opacity: 1; }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+@keyframes float-up {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+@keyframes gold-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+@keyframes ripple {
+  0%   { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(4); opacity: 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── animation utility classes ─── */
+.animate-shimmer {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface-2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+.animate-slide-in-right  { animation: slide-in-right 0.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+.animate-slide-out-left  { animation: slide-out-left 0.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+.animate-pop-in          { animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-pulse-glow      { animation: pulse-glow 2.5s infinite; }
+.animate-bounce-in       { animation: bounce-in 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-fade-in         { animation: fade-in 0.4s ease forwards; }
+.animate-float           { animation: float-up 3s ease-in-out infinite; }
+
+.gold-text {
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright), var(--gold-dim));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-shimmer 4s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--primary-dim); }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE NAV UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Desktop nav — hidden by default (mobile), shown on lg+ */
+.desktop-nav { display: none !important; }
+
+/* Mobile-only — shown by default (mobile), hidden on lg+ */
+.mobile-only { display: flex !important; }
+
+/* Bottom nav bar — fixed to bottom on mobile only */
+.bottom-nav-bar {
+  display: flex !important;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 4px 8px;
+  padding-bottom: env(safe-area-inset-bottom, 4px);
+  align-items: center;
+  height: 64px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Royal badge in navbar — hidden on mobile */
+.nav-badge-royal {
+  display: none;
+  font-size: 10px;
+  color: var(--gold-bright);
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--gold-glow);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Add bottom padding to page content so it's not hidden by bottom nav */
+main {
+  padding-bottom: 80px !important;
+}
+
+@media (min-width: 1024px) {
+  /* Show desktop nav, hide mobile-only elements */
+  .desktop-nav  { display: flex !important; }
+  .mobile-only  { display: none !important; }
+
+  /* Hide bottom nav on desktop */
+  .bottom-nav-bar { display: none !important; }
+
+  /* Remove bottom padding override — use default page padding */
+  main { padding-bottom: 48px !important; }
+
+  /* Show royal badge */
+  .nav-badge-royal { display: inline-block; }
+}
+
+/* ── No horizontal scroll ── */
+html, body { overflow-x: hidden; max-width: 100vw; }
+
+/* ── Touch-friendly tap targets ── */
+@media (max-width: 1023px) {
+  button, a { min-height: 40px; }
+}
+
+/* ── Safe area for notched phones ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav-bar {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4px);
+    height: calc(64px + env(safe-area-inset-bottom));
+  }
+  main {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  }
+}
