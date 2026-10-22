@@ -6,239 +6,447 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  ADMIN
+  ORGANIZER
+  PARTICIPANT
+}
+
+enum QuizStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum Visibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
+enum QuestionType {
+  MCQ_SINGLE
+  MCQ_MULTI
+  TRUE_FALSE
+  SHORT_ANSWER
+  NUMERIC
+  LONG_ANSWER
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+  EXPIRED
+}
+
+enum FlagStatus {
+  OPEN
+  DISMISSED
+  ACTIONED
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  name      String?
-  email     String   @unique
-  password  String
-  role      String   @default("user")
-  avatar    String?
-  isEmailVerified Boolean @default(false)
-  verificationToken String?
-  verificationTokenExpiry DateTime?
-  resetToken String?
-  resetTokenExpiry DateTime?
-  failedLoginAttempts Int @default(0)
-  lockUntil DateTime?
-  xp        Int      @default(0)
-  tier      String   @default("Bronze")
-  quizzes   Quiz[]   @relation("QuizCreator")
-  results   Result[]
-  attempts  Attempt[]
-  responses Response[]
-  badges    UserBadge[]
-  reviews   Review[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
+  name         String?
+  avatarUrl    String?
+  role         Role      @default(PARTICIPANT)
+  disabled     Boolean   @default(false)
+  xp           Int       @default(0)
+  tier         String    @default("Bronze")
+  streakDays   Int       @default(0)
+  lastActiveOn DateTime? @db.Date
+  failedLogins Int       @default(0)
+  lockUntil    DateTime?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  // Social features
-  following   Follow[]  @relation("Follower")
-  followers   Follow[]  @relation("Following")
+  refreshTokens RefreshToken[]
+  quizzes       Quiz[]
+  bankQuestions BankQuestion[]
+  cohorts       Cohort[]
+  memberships   CohortMember[]
+  invitations   Invitation[]
+  attempts      Attempt[]
+  results       Result[]
+  reviews       Review[]
+  badges        UserBadge[]
+  following     Follow[]       @relation("follower")
+  followers     Follow[]       @relation("following")
+  auditLogs     AuditLog[]
+  flags         FlaggedContent[] @relation("reporter")
+
+  @@index([role])
 }
 
-model Badge {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String
-  icon        String   // Icon identifier (e.g., emoji or icon name)
-  criteria    String   // JSON describing how to earn
-  xpReward    Int      @default(100)
-  users       UserBadge[]
-  createdAt   DateTime @default(now())
+model RefreshToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  familyId   String
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  replacedBy String?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
 }
 
-model UserBadge {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  badgeId   Int
-  earnedAt  DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  badge     Badge    @relation(fields: [badgeId], references: [id])
-
-  @@unique([userId, badgeId])
+model Category {
+  id      String         @id @default(cuid())
+  name    String         @unique
+  slug    String         @unique
+  quizzes Quiz[]
+  bank    BankQuestion[]
 }
 
-model Follow {
-  id          Int      @id @default(autoincrement())
-  followerId  Int
-  followingId Int
-  createdAt   DateTime @default(now())
-  follower    User     @relation("Follower", fields: [followerId], references: [id])
-  following   User     @relation("Following", fields: [followingId], references: [id])
-
-  @@unique([followerId, followingId])
-}
-
-model Review {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  quizId    Int
-  rating    Int      // 1-5 stars
-  comment   String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
-
-  @@unique([userId, quizId])
-}
-
-model DailyChallenge {
-  id          Int      @id @default(autoincrement())
-  date        DateTime @unique
-  quizId      Int
-  xpBonus     Int      @default(200)
-  completedBy Int[]    @default([])
-  createdAt   DateTime @default(now())
+model Tag {
+  id      String     @id @default(cuid())
+  name    String     @unique
+  quizzes QuizTag[]
 }
 
 model Quiz {
-  id          Int        @id @default(autoincrement())
-  title       String
-  description String?
-  category    String?
-  difficulty  String     @default("medium")
-  timeLimit   Int        @default(600)
-  maxAttempts Int?       // Null = unlimited attempts
-  isPublished Boolean    @default(false)
-  shuffleQuestions Boolean @default(false) // Randomize question order
-  availableFrom DateTime? // Scheduled availability start
-  availableUntil DateTime? // Scheduled availability end
-  isFlagged   Boolean    @default(false) // Flagged for moderation
-  flagReason  String?
-  creatorId   Int
-  creator     User       @relation("QuizCreator", fields: [creatorId], references: [id])
+  id               String     @id @default(cuid())
+  ownerId          String
+  owner            User       @relation(fields: [ownerId], references: [id])
+  title            String
+  description      String     @default("")
+  categoryId       String?
+  category         Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  difficulty       String     @default("MEDIUM")
+  status           QuizStatus @default(DRAFT)
+  visibility       Visibility @default(PRIVATE)
+  accessCode       String?    @unique
+  /// QuizSettings (see @quiz/shared)
+  settings         Json
+  opensAt          DateTime?
+  closesAt         DateTime?
+  currentVersionId String?
+  /// draft has edits not yet published as a new version
+  dirty            Boolean    @default(false)
+  isFlagged        Boolean    @default(false)
+  deletedAt        DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  tags        QuizTag[]
+  sections    Section[]
   questions   Question[]
-  results     Result[]
-  responses   Response[]
+  versions    QuizVersion[]
+  assignments QuizAssignment[]
+  invitations Invitation[]
   attempts    Attempt[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  results     Result[]
+  reviews     Review[]
+  challenges  DailyChallenge[]
+
+  @@index([ownerId, status])
+  @@index([status, visibility])
+  @@index([categoryId])
+}
+
+model QuizTag {
+  quizId String
+  tagId  String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([quizId, tagId])
+}
+
+model Section {
+  id          String     @id @default(cuid())
+  quizId      String
+  quiz        Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  title       String
+  description String     @default("")
+  position    Int
+  deletedAt   DateTime?
+  questions   Question[]
+
+  @@index([quizId, position])
 }
 
 model Question {
-  id        Int      @id @default(autoincrement())
-  quizId    Int?
-  quiz      Quiz?    @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  // If quizId is null, it's a global question from the question bank
-  text      String
-  order     Int      @default(0)
-  type      QuestionType @default(MULTIPLE_CHOICE)
-  options   Option[]
-  responses Response[]
-  // Analytics
-  timesShown    Int @default(0)  // How many times this question was shown
-  timesCorrect  Int @default(0)  // How many times answered correctly
-  avgTimeTaken  Float @default(0) // Average time to answer
+  id          String       @id @default(cuid())
+  quizId      String
+  quiz        Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sectionId   String?
+  section     Section?     @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  type        QuestionType
+  text        String
+  explanation String       @default("")
+  points      Float        @default(1)
+  position    Int
+  /// QuestionConfig (see @quiz/shared)
+  config      Json         @default("{}")
+  deletedAt   DateTime?
+  options     Option[]
+
+  @@index([quizId, position])
 }
 
-model QuestionAnalytics {
-  id              Int      @id @default(autoincrement())
-  questionId      Int
-  totalAttempts   Int      @default(0)
-  correctAttempts  Int      @default(0)
-  avgTimeSeconds  Float    @default(0)
-  difficultyScore Float    @default(0.5) // 0-1, calculated from success rate
-  updatedAt       DateTime @updatedAt
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean  @default(false)
+  position   Int
 
-  @@index([questionId])
+  @@index([questionId, position])
+}
+
+model BankQuestion {
+  id          String       @id @default(cuid())
+  ownerId     String
+  owner       User         @relation(fields: [ownerId], references: [id])
+  categoryId  String?
+  category    Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  type        QuestionType
+  text        String
+  explanation String       @default("")
+  points      Float        @default(1)
+  tags        String[]
+  /// [{text,isCorrect}]
+  options     Json         @default("[]")
+  config      Json         @default("{}")
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+
+  @@index([ownerId])
+}
+
+/// Immutable published snapshot of a quiz: attempts bind to a version, so editing never corrupts past attempts.
+model QuizVersion {
+  id            String   @id @default(cuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  number        Int
+  /// PublishedQuiz (see @quiz/shared) incl. answer key
+  snapshot      Json
+  publishedById String
+  createdAt     DateTime @default(now())
+  attempts      Attempt[]
+
+  @@unique([quizId, number])
+}
+
+model Cohort {
+  id          String         @id @default(cuid())
+  ownerId     String
+  owner       User           @relation(fields: [ownerId], references: [id])
+  name        String
+  description String         @default("")
+  deletedAt   DateTime?
+  createdAt   DateTime       @default(now())
+  members     CohortMember[]
+  assignments QuizAssignment[]
+
+  @@index([ownerId])
+}
+
+model CohortMember {
+  cohortId String
+  userId   String
+  cohort   Cohort   @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addedAt  DateTime @default(now())
+
+  @@id([cohortId, userId])
+  @@index([userId])
+}
+
+model QuizAssignment {
+  quizId   String
+  cohortId String
+  quiz     Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  cohort   Cohort @relation(fields: [cohortId], references: [id], onDelete: Cascade)
+
+  @@id([quizId, cohortId])
+}
+
+model Invitation {
+  quizId    String
+  userId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([quizId, userId])
+  @@index([userId])
+}
+
+model Attempt {
+  id            String        @id @default(cuid())
+  quizId        String
+  quiz          Quiz          @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  versionId     String
+  version       QuizVersion   @relation(fields: [versionId], references: [id])
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  number        Int
+  status        AttemptStatus @default(IN_PROGRESS)
+  startedAt     DateTime      @default(now())
+  /// hard server deadline (null = untimed)
+  expiresAt     DateTime?
+  submittedAt   DateTime?
+  durationSec   Int?
+  /// ordered question ids
+  questionOrder Json
+  /// { [questionId]: optionId[] } shuffled option order
+  optionOrder   Json          @default("{}")
+  tabSwitches   Int           @default(0)
+  blurSeconds   Int           @default(0)
+  lastSeenAt    DateTime      @default(now())
+  answers       Answer[]
+  result        Result?
+
+  @@unique([quizId, userId, number])
+  @@index([userId, status])
+  @@index([quizId, status])
+}
+
+model Answer {
+  id          String   @id @default(cuid())
+  attemptId   String
+  attempt     Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId  String
+  /// { optionIds?: string[], text?: string, number?: number }
+  value       Json
+  flagged     Boolean  @default(false)
+  timeSpentMs Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  grade       Grade?
+
+  @@unique([attemptId, questionId])
+}
+
+model Grade {
+  id           String   @id @default(cuid())
+  answerId     String   @unique
+  answer       Answer   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  maxScore     Float
+  autoScore    Float?
+  manualScore  Float?
+  needsManual  Boolean  @default(false)
+  isCorrect    Boolean?
+  feedback     String   @default("")
+  rubricScores Json?
+  graderId     String?
+  gradedAt     DateTime?
+
+  @@index([needsManual])
+}
+
+model Result {
+  id         String   @id @default(cuid())
+  attemptId  String   @unique
+  attempt    Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  quizId     String
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score      Float
+  maxScore   Float
+  percentage Float
+  band       String?
+  passed     Boolean
+  /// false while manual grading is pending
+  isFinal    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([quizId, percentage])
+  @@index([userId, createdAt])
+}
+
+model Review {
+  id        String    @id @default(cuid())
+  quizId    String
+  quiz      Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String    @default("")
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([quizId, userId])
+}
+
+model Badge {
+  id          String      @id @default(cuid())
+  key         String      @unique
+  name        String
+  description String
+  icon        String
+  users       UserBadge[]
+}
+
+model UserBadge {
+  userId    String
+  badgeId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge     Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedAt DateTime @default(now())
+
+  @@id([userId, badgeId])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@id([followerId, followingId])
+}
+
+model DailyChallenge {
+  date    DateTime @id @db.Date
+  quizId  String
+  quiz    Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  xpBonus Int      @default(50)
 }
 
 model AuditLog {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  action      String   // e.g., 'QUIZ_CREATED', 'USER_LOGIN', 'ADMIN_ACTION'
-  entityType  String?  // e.g., 'Quiz', 'User', 'Badge'
-  entityId    Int?
-  details     String?  // JSON string with additional details
-  ipAddress   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String
+  entityId   String?
+  meta       Json?
+  ip         String?
+  createdAt  DateTime @default(now())
 
-  @@index([userId])
+  @@index([actorId])
   @@index([action])
   @@index([createdAt])
 }
 
 model FlaggedContent {
-  id          Int      @id @default(autoincrement())
-  contentType String   // QUIZ, QUESTION, USER
-  contentId   Int
-  reporterId  Int
-  reason      String
-  status      String   @default("PENDING") // PENDING, REVIEWED, DISMISSED
-  reviewedBy  Int?
-  reviewedAt  DateTime?
-  notes       String?
-  createdAt   DateTime @default(now())
+  id           String     @id @default(cuid())
+  reporterId   String
+  reporter     User       @relation("reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  entityType   String
+  entityId     String
+  reason       String
+  status       FlagStatus @default(OPEN)
+  resolvedById String?
+  resolution   String?
+  createdAt    DateTime   @default(now())
 
   @@index([status])
-  @@index([contentType, contentId])
-}
-
-model Option {
-  id         Int      @id @default(autoincrement())
-  questionId Int
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  text       String
-  isCorrect  Boolean  @default(false)
-  responses  Response[]
-}
-
-model Result {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  quizId    Int
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  score     Int
-  total     Int
-  timeTaken Int      @default(0)
-  correct   Int      @default(0)
-  attemptId Int? @unique
-  attempt   Attempt? @relation("AttemptResult", fields: [attemptId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
-}
-
-model Attempt {
-  id         Int       @id @default(autoincrement())
-  userId     Int
-  quizId     Int
-  status     AttemptStatus @default(ACTIVE)
-  startedAt  DateTime  @default(now())
-  completedAt DateTime?
-  questionOrder Int[]   @default([])
-  user       User      @relation(fields: [userId], references: [id])
-  quiz       Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  responses  Response[]
-  result     Result?   @relation("AttemptResult")
-  @@unique([userId, quizId, status], name: "unique_active_attempt_per_user_quiz")
-  @@index([userId, quizId, status])
-}
-
-model Response {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  quizId     Int
-  questionId Int
-  optionId   Int
-  attemptId  Int?
-  user       User     @relation(fields: [userId], references: [id])
-  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  option     Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  attempt    Attempt? @relation(fields: [attemptId], references: [id], onDelete: SetNull)
-
-  @@unique([userId, questionId, attemptId], map: "uniq_response_per_attempt")
-}
-
-enum AttemptStatus {
-  ACTIVE
-  COMPLETED
-}
-
-enum QuestionType {
-  MULTIPLE_CHOICE  // Single correct answer, 2-6 options
-  TRUE_FALSE       // True or False
-  MULTI_SELECT     // Multiple correct answers
-  FILL_BLANK       // Text answer
 }

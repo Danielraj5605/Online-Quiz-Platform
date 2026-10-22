@@ -1,0 +1,17 @@
+{
+  "name": "quizzo",
+  "private": true,
+  "version": "2.0.0",
+  "workspaces": ["shared", "backend", "frontend"],
+  "scripts": {
+    "dev:api": "npm run dev -w backend",
+    "dev:web": "npm run dev -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "lint": "npm run lint -w backend && npm run lint -w frontend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "test": "npm test -w backend && npm test -w frontend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "e2e": "npx playwright test"
+  }
+}
