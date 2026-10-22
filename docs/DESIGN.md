@@ -77,32 +77,26 @@ An exam-paper-meets-instrument-panel aesthetic: calm, serious, tactile — not p
 ### Design tokens (CSS variables, mapped via Tailwind v4 `@theme`)
 
 ```css
+/* canonical copy lives in frontend/src/index.css; scripts/check-contrast.mjs verifies every pair */
 :root {
-  /* color — light */
-  --bg:#FAF7F2; --surface:#FFFFFF; --surface-2:#F2EDE4; --border:#E2DACC;
-  --text:#1B1A17; --text-muted:#5E5A50;            /* 7.1:1 / 5.6:1 on --bg */
-  --accent:#C8401F; --accent-hover:#A93417; --on-accent:#FFFFFF;   /* 5.0:1 */
-  --teal:#0F6B67; --success:#2F7D3B; --warning:#9A5B00; --danger:#B3261E;
-  --focus:#1F5FD1;
-  /* type scale (rem) */
-  --text-xs:.75; --text-sm:.875; --text-base:1; --text-lg:1.125;
-  --text-xl:1.375; --text-2xl:1.75; --text-3xl:2.25; --text-4xl:3;
-  /* space (4px base) */ --space-1:.25rem; --space-2:.5rem; --space-3:.75rem; --space-4:1rem;
-  --space-6:1.5rem; --space-8:2rem; --space-12:3rem; --space-16:4rem;
-  /* radius */ --radius-sm:4px; --radius-md:6px; --radius-lg:10px; --radius-full:9999px;
-  /* elevation */ --shadow-1:0 1px 0 rgb(0 0 0/.04); --shadow-2:0 4px 16px rgb(27 26 23/.08);
-  /* motion */ --ease:cubic-bezier(.2,.8,.2,1); --dur-fast:120ms; --dur:200ms; --dur-slow:360ms;
+  --bg:#FAF7F2; --surface:#FFFFFF; --surface-2:#F2EDE4; --border:#E2DACC; --border-strong:#857D6F; /* 3.7:1 for input borders */
+  --text:#1B1A17; --text-muted:#5E5A50;
+  --accent:#C8401F; --accent-hover:#A93417; --on-accent:#FFFFFF; --accent-soft:#FFF3EF;
+  --teal:#0F6B67; --teal-soft:#DDEFEE; --success:#2F7D3B; --success-soft:#EDF6EE;
+  --warning:#8F5400; --warning-soft:#F8EBD3; --danger:#B3261E; --danger-soft:#F9E1DF; --focus:#1F5FD1;
+  /* type: Fraunces (display) / Instrument Sans (UI) / JetBrains Mono (numerals); radius 4/6/10/14; motion 120/200/360ms */
 }
-:root.dark, [data-theme=dark] {
-  --bg:#101215; --surface:#171A1E; --surface-2:#1E2227; --border:#2B3037;
+.dark {
+  --bg:#101215; --surface:#171A1E; --surface-2:#1E2227; --border:#2B3037; --border-strong:#7B8390;
   --text:#EFEBE3; --text-muted:#A7A296;
-  --accent:#FF7A55; --accent-hover:#FF9376; --on-accent:#1A0A05;
-  --teal:#4FC3BC; --success:#6CC47A; --warning:#E6A23C; --danger:#FF8A80; --focus:#7FA8FF;
+  --accent:#FF7A55; --accent-hover:#FF9376; --on-accent:#1A0A05; --accent-soft:#3A1E15;
+  --teal:#4FC3BC; --teal-soft:#12302E; --success:#6CC47A; --success-soft:#17301C;
+  --warning:#E6A23C; --warning-soft:#36280F; --danger:#FF8A80; --danger-soft:#3A1C1A; --focus:#7FA8FF;
 }
-@media (prefers-reduced-motion: reduce) { :root { --dur-fast:0ms; --dur:0ms; --dur-slow:0ms; } }
+@media (prefers-reduced-motion: reduce) { /* all durations collapse to 0 */ }
 ```
 
-Hex values are the starting proposal; a script in `frontend/scripts/check-contrast.mjs` will verify every text/background pair (≥ 4.5:1 body, ≥ 3:1 large/UI) in both themes and fail CI if any regress. Theme: light / dark / system; no flash via inline script in `index.html`. The 5-theme system is dropped.
+Hex values were tuned during implementation (warning and soft tints darkened/lightened, `--border-strong` added for 3:1 input borders); `frontend/scripts/check-contrast.mjs` verifies every text/background pair (≥ 4.5:1 body, ≥ 3:1 large/UI) in both themes and fail CI if any regress. Theme: light / dark / system; no flash via inline script in `index.html`. The 5-theme system is dropped.
 
 ### Component library
 shadcn/ui pattern on Radix primitives (Dialog, Popover, Dropdown, Tabs, Tooltip, Select, Checkbox, RadioGroup, Toast, Accordion), restyled to tokens, plus: DataTable (sort/filter/paginate, virtualised for big lists), StatCard, EmptyState, Skeleton, Stepper, Timer, QuestionNavigator, ScoreRing, StatusBadge (lifecycle states), RichText (sanitised), CommandPalette (cmdk), FormField (RHF + zod, `aria-describedby`/`aria-invalid` wired). Icons: lucide-react only (no emoji glyphs).

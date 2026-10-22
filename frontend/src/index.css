@@ -1,0 +1,181 @@
+@import '@fontsource-variable/fraunces/index.css';
+@import '@fontsource-variable/fraunces/wght.css';
+@import '@fontsource-variable/instrument-sans/index.css';
+@import '@fontsource-variable/jetbrains-mono/index.css';
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ───────── Design tokens — "Marking Pen" (see docs/DESIGN.md) ─────────
+   Hex values are verified by scripts/check-contrast.mjs (reads these two blocks). */
+:root {
+  --bg: #faf7f2;
+  --surface: #ffffff;
+  --surface-2: #f2ede4;
+  --border: #e2dacc;
+  --border-strong: #857d6f;
+  --text: #1b1a17;
+  --text-muted: #5e5a50;
+  --accent: #c8401f;
+  --accent-hover: #a93417;
+  --on-accent: #ffffff;
+  --accent-soft: #fff3ef;
+  --teal: #0f6b67;
+  --teal-soft: #ddefee;
+  --success: #2f7d3b;
+  --success-soft: #edf6ee;
+  --warning: #8f5400;
+  --warning-soft: #f8ebd3;
+  --danger: #b3261e;
+  --danger-soft: #f9e1df;
+  --focus: #1f5fd1;
+
+  --shadow-1: 0 1px 0 rgb(0 0 0 / 0.04);
+  --shadow-2: 0 4px 16px rgb(27 26 23 / 0.08);
+  --shadow-3: 0 12px 40px rgb(27 26 23 / 0.16);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 360ms;
+}
+
+.dark {
+  --bg: #101215;
+  --surface: #171a1e;
+  --surface-2: #1e2227;
+  --border: #2b3037;
+  --border-strong: #7b8390;
+  --text: #efebe3;
+  --text-muted: #a7a296;
+  --accent: #ff7a55;
+  --accent-hover: #ff9376;
+  --on-accent: #1a0a05;
+  --accent-soft: #3a1e15;
+  --teal: #4fc3bc;
+  --teal-soft: #12302e;
+  --success: #6cc47a;
+  --success-soft: #17301c;
+  --warning: #e6a23c;
+  --warning-soft: #36280f;
+  --danger: #ff8a80;
+  --danger-soft: #3a1c1a;
+  --focus: #7fa8ff;
+
+  --shadow-1: 0 1px 0 rgb(0 0 0 / 0.3);
+  --shadow-2: 0 4px 16px rgb(0 0 0 / 0.4);
+  --shadow-3: 0 12px 40px rgb(0 0 0 / 0.55);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-focus: var(--focus);
+
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+  --shadow-3: var(--shadow-3);
+  --ease-out: var(--ease);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: 5rem;
+    scroll-padding-bottom: 6rem;
+    accent-color: var(--accent);
+  }
+  body {
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  ::selection { background: var(--accent-soft); color: var(--text); }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  button, [role='button'], a, summary { touch-action: manipulation; }
+  button:not(:disabled), [role='button']:not([aria-disabled='true']) { cursor: pointer; }
+  /* tabular numerals wherever we show numbers */
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+}
+
+@layer components {
+  .paper-grain {
+    background-image: radial-gradient(rgb(27 26 23 / 0.045) 1px, transparent 1px);
+    background-size: 3px 3px;
+  }
+  .dark .paper-grain {
+    background-image: radial-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  }
+  .hairline { border: 1px solid var(--border); }
+  .safe-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+  .safe-top { padding-top: env(safe-area-inset-top); }
+}
+
+@keyframes stamp {
+  0% { transform: scale(1.08); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.animate-stamp { animation: stamp 180ms var(--ease) both; }
+.animate-fade-up { animation: fade-up var(--dur-slow) var(--ease) both; }
+.animate-spin-slow { animation: spin 0.9s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  :root { --dur-fast: 0ms; --dur: 0ms; --dur-slow: 0ms; }
+}

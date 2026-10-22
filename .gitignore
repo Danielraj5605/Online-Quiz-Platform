@@ -8,3 +8,4 @@ playwright-report
 test-results
 .vite
 .DS_Store
+e2e/screenshots
