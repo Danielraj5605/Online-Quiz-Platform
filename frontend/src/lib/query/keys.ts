@@ -51,7 +51,10 @@ export const keys = {
   },
   organizer: { dashboard: ['organizer', 'dashboard'] as const },
   gamification: { me: ['gamification', 'me'] as const },
-  reviews: { list: (quizId: string) => ['reviews', quizId] as const },
+  reviews: {
+    all: (quizId: string) => ['reviews', quizId] as const,
+    list: (quizId: string, q: object = {}) => ['reviews', quizId, q] as const,
+  },
   users: { public: (id: string) => ['users', 'public', id] as const },
   admin: {
     all: ['admin'] as const,

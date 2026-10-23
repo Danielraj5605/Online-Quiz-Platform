@@ -34,7 +34,10 @@ export class SaveQueue {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private inflight: Promise<void> | null = null;
+  /** terminal: submitted, or the server closed the attempt */
   private dead = false;
+  /** component unmounted — timers are stopped, but a StrictMode/re-mount can `attach()` again */
+  private detached = false;
   status: SaveStatus = 'idle';
 
   constructor(private o: SaveQueueOptions) {
@@ -61,6 +64,7 @@ export class SaveQueue {
 
   enqueue(item: PendingItem) {
     if (this.dead) return;
+    this.detached = false;
     this.pending.set(item.questionId, { ...item, v: ++this.version });
     this.persist();
     this.set(this.status === 'offline' ? 'offline' : 'saving');
@@ -82,7 +86,7 @@ export class SaveQueue {
         for (const b of batch) if (this.pending.get(b.questionId)?.v === b.v) this.pending.delete(b.questionId);
         this.persist();
         this.set(this.pending.size ? 'saving' : 'saved');
-        if (this.pending.size) this.timer = setTimeout(() => void this.flush(), 0);
+        if (this.pending.size && !this.detached) this.timer = setTimeout(() => void this.flush(), 0);
       } catch (e) {
         const err = e as ApiError;
         if (err.status === 409 && (err.code === 'ATTEMPT_EXPIRED' || err.code === 'ATTEMPT_CLOSED')) {
@@ -105,6 +109,7 @@ export class SaveQueue {
   notifyOnline() { if (this.status === 'offline' || this.status === 'error') void this.flush(); }
 
   private scheduleRetry() {
+    if (this.detached || this.dead) return;
     if (this.retryTimer) clearTimeout(this.retryTimer);
     this.retryTimer = setTimeout(() => { this.retryTimer = null; void this.flush(); }, this.o.retryMs ?? 5000);
   }
@@ -117,12 +122,15 @@ export class SaveQueue {
     this.pending.clear();
     this.persist();
   }
-  /** Stop timers without discarding the stored queue (unmount). */
+  /** Stop timers without discarding the stored queue (unmount). Reversible via `attach()`. */
   dispose() {
     if (this.timer) clearTimeout(this.timer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
-    this.dead = true;
+    this.timer = null; this.retryTimer = null;
+    this.detached = true;
   }
+  /** Re-arm after `dispose()` (React StrictMode runs effect → cleanup → effect on the same instance). */
+  attach() { this.detached = false; if (!this.dead && this.pending.size) this.timer = setTimeout(() => void this.flush(), 0); }
 }
 
 function safeLocal(): KeyValueStore | null {

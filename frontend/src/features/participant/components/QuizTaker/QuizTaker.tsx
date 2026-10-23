@@ -59,6 +59,7 @@ export function QuizTaker({ attempt }: { attempt: AttemptViewDto }) {
   // restore unsent answers from a previous session (reload / crash / offline) and push them
   useEffect(() => {
     qStart.current = Date.now();
+    queue.attach();
     const restored = queue.restored();
     if (restored.length) { apply({ type: 'restore', items: restored }); void queue.flush(); }
     return () => queue.dispose();
@@ -118,6 +119,9 @@ export function QuizTaker({ attempt }: { attempt: AttemptViewDto }) {
       }
       submittingRef.current = false;
       setSubmitting(false);
+      toast.error(auto
+        ? 'Time is up but we could not submit your answers. Use “Review & submit” to retry.'
+        : e instanceof ApiError ? e.message : 'Could not submit your answers. Please try again.');
     }
   }, [attempt.id, commitTime, current, navigate, qc, queue]);
 

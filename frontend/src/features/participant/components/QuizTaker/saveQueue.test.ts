@@ -84,4 +84,24 @@ describe('SaveQueue', () => {
     q.clear();
     expect(store.data.size).toBe(0);
   });
+
+  it('keeps working after dispose() + attach() (React StrictMode re-runs effects on the same instance)', async () => {
+    const save = vi.fn().mockResolvedValue({});
+    const q = new SaveQueue({ attemptId: 'a1', save, onStatus: () => {}, storage: memStore(), debounceMs: 10 });
+    q.dispose();
+    q.attach();
+    q.enqueue(item('q1', 'still saved'));
+    await vi.advanceTimersByTimeAsync(20);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(q.pendingCount).toBe(0);
+  });
+
+  it('does not schedule retries once disposed', async () => {
+    const save = vi.fn().mockRejectedValue(new ApiError(0, 'NETWORK', 'down'));
+    const q = new SaveQueue({ attemptId: 'a1', save, onStatus: () => {}, storage: memStore(), debounceMs: 10, retryMs: 50 });
+    q.enqueue(item('q1', 'x'));
+    q.dispose();
+    await vi.advanceTimersByTimeAsync(500);
+    expect(save).not.toHaveBeenCalled();
+  });
 });

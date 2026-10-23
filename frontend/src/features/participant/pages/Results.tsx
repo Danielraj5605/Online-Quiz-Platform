@@ -13,12 +13,13 @@ import { QuestionReviewCard } from '../components/QuestionReviewCard';
 import { RatingInput } from '../components/Rating';
 
 function ReviewForm({ quizId }: { quizId: string }) {
-  const mine = useApiQuery(keys.reviews.list(quizId), () => reviewsApi.list(quizId, { pageSize: 1 }));
+  const mine = useApiQuery(keys.reviews.list(quizId, { pageSize: 1 }), () => reviewsApi.list(quizId, { pageSize: 1 }));
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
+  // null = untouched, so an existing comment can still be cleared to empty
+  const [comment, setComment] = useState<string | null>(null);
   const existing = mine.data?.mine;
-  const save = useApiMutation(() => reviewsApi.save(quizId, { rating: rating || existing?.rating || 5, comment }), {
-    invalidate: [keys.reviews.list(quizId), keys.catalog.all], success: 'Thanks for the review',
+  const save = useApiMutation(() => reviewsApi.save(quizId, { rating: rating || existing?.rating || 5, comment: comment ?? existing?.comment ?? '' }), {
+    invalidate: [keys.reviews.all(quizId), keys.catalog.all], success: 'Thanks for the review',
   });
   const r = rating || existing?.rating || 0;
   return (
@@ -28,7 +29,7 @@ function ReviewForm({ quizId }: { quizId: string }) {
         <RatingInput value={r} onChange={setRating} />
         <div className="grid gap-1.5">
           <label htmlFor="rv-comment" className="text-sm font-medium">Comment <span className="font-normal text-muted">(optional)</span></label>
-          <Textarea id="rv-comment" rows={3} maxLength={1000} value={comment || (rating === 0 ? existing?.comment ?? '' : '')} onChange={(e) => setComment(e.target.value)} />
+          <Textarea id="rv-comment" rows={3} maxLength={1000} value={comment ?? existing?.comment ?? ''} onChange={(e) => setComment(e.target.value)} />
         </div>
         <div><Button disabled={!r} loading={save.isPending} onClick={() => save.mutate()}>{existing ? 'Update review' : 'Post review'}</Button></div>
       </CardContent>

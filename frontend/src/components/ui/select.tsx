@@ -3,12 +3,13 @@ import * as S from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fieldClass } from './input';
+import { useFieldProps } from './form';
 
 export const Select = S.Root;
 export const SelectValue = S.Value;
 
 export const SelectTrigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<typeof S.Trigger>>(({ className, children, ...p }, ref) => (
-  <S.Trigger ref={ref} className={cn(fieldClass, 'flex h-11 items-center justify-between gap-2 text-left text-base sm:h-10 sm:text-sm [&>span]:truncate data-[placeholder]:text-muted', className)} {...p}>
+  <S.Trigger ref={ref} className={cn(fieldClass, 'flex h-11 items-center justify-between gap-2 text-left text-base sm:h-10 sm:text-sm [&>span]:truncate data-[placeholder]:text-muted', className)} {...useFieldProps()} {...p}>
     {children}
     <S.Icon asChild><ChevronDown className="size-4 shrink-0 text-muted" aria-hidden="true" /></S.Icon>
   </S.Trigger>

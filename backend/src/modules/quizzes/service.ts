@@ -14,6 +14,7 @@ import { pageMeta, orderBy, skipTake } from '../../core/http';
 import { buildSnapshot, loadDetail, questionInclude, quizInclude, summaries, toAuthorQuestion } from './mappers';
 import { statusForSchedule } from './lifecycle';
 import { audit } from '../../core/audit';
+import { regradeQuiz } from '../attempts/regrade';
 
 export const touch = (quizId: string) => cache.invalidateTags(`quiz:${quizId}`, 'catalog');
 
@@ -267,15 +268,7 @@ export async function listVersions(user: AuthLike, quizId: string) {
 export async function regrade(user: AuthLike, quizId: string, versionId?: string) {
   await requireQuizOwner(user, quizId);
   if (versionId && !(await prisma.quizVersion.findFirst({ where: { id: versionId, quizId }, select: { id: true } }))) throw notFound('Version');
-  let mod: { regradeQuiz: (quizId: string, versionId?: string) => Promise<{ regraded: number }> };
-  try {
-    // resolved at runtime: the attempts module may not be built yet
-    const path = '../attempts/regrade';
-    mod = await import(/* @vite-ignore */ path);
-  } catch {
-    throw new (await import('../../core/errors')).AppError(501, 'NOT_IMPLEMENTED', 'Regrading is not available yet');
-  }
-  const out = await mod.regradeQuiz(quizId, versionId);
+  const out = await regradeQuiz(quizId, versionId);
   await touch(quizId);
   await auditLater('quiz.regrade', user, quizId, { versionId, ...out });
   return out;

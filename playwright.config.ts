@@ -4,8 +4,8 @@ const WEB = process.env.E2E_BASE_URL ?? 'http://localhost:5173';
 
 export default defineConfig({
   testDir: './e2e/tests',
-  timeout: 90_000,
-  expect: { timeout: 10_000 },
+  timeout: 240_000, // the full-flow spec spans four role switches; a remote database adds 1–2 s per request
+  expect: { timeout: 15_000 },
   fullyParallel: false,
   workers: 1,
   retries: 0,

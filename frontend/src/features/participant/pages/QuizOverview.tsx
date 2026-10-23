@@ -25,7 +25,7 @@ export default function QuizOverview() {
   const { id = '' } = useParams();
   const quiz = useApiQuery(keys.catalog.detail(id), () => catalogApi.get(id), { retry: false });
   useDocumentTitle(quiz.data?.title ?? 'Quiz');
-  const reviews = useApiQuery(keys.reviews.list(id), () => reviewsApi.list(id, { pageSize: 5 }), { enabled: !!quiz.data });
+  const reviews = useApiQuery(keys.reviews.list(id, { pageSize: 5 }), () => reviewsApi.list(id, { pageSize: 5 }), { enabled: !!quiz.data });
   const history = useApiQuery(keys.attempts.history({ quizId: id }), async () => (await attemptsApi.history({ pageSize: 100 })).data.filter((a) => a.quizId === id), { enabled: !!quiz.data });
 
   if (quiz.isPending) {

@@ -8,9 +8,12 @@
 - [x] README, `docker-compose.yml` + Dockerfiles, Playwright config, e2e spec
 - [x] Checks passing offline: backend + frontend typecheck, lint (0 errors), frontend build, 90 frontend tests, 39 grading unit tests, contrast check (62 pairs)
 
-## Not verified (database unreachable from the development network)
-- [ ] Backend integration tests against Neon were passing when written by each workstream (quizzes 21, attempts 22, reports/admin 18) but were **not re-run** after the final changes
-- [ ] `e2e/tests/full-flow.spec.ts` (organizer publishes → participant takes → organizer grades → reports) is written but **has not been run**; selectors may need small adjustments on first run
+## Verified on 2026-10-23 (database reachable)
+- [x] Backend: typecheck clean, 100 tests pass against Neon (5 files, including integration suites)
+- [x] Frontend: typecheck + lint clean, 93 tests pass
+- [x] `e2e/tests/full-flow.spec.ts` passes (organizer publishes → participant takes → organizer grades → reports show 80 %). Fixes were spec-only: answer questions in whatever order they appear, rubric input label, `passRate` is a percentage; the test timeout is now 240 s because each request to the remote database takes 1–2 s
+
+## Not verified
 - [ ] Final browser pass over every page at 375/1280 px in light and dark: done per-stream earlier for most pages; grading shortcuts, bank form, cohort detail and desktop-dark were not re-checked
 - [ ] Docker compose stack not built (Docker unavailable locally)
 - [ ] Dedicated `/code-review` and security-review passes not run
@@ -25,7 +28,6 @@
 - `EXPIRED` attempt status is unused (expired attempts auto-submit)
 
 ## Suggested next steps
-1. Run `npm test` and `npx playwright test` from a network that can reach the database; fix any selector drift
-2. Run `/code-review` and `/security-review` on the branch
+1. Run `/code-review` and `/security-review` on the branch
 3. Rotate the Neon password (it was shared in chat) and set a strong `JWT_SECRET` for deployments
 4. Add SQL aggregates for very large quizzes; consider SSE for the live monitor

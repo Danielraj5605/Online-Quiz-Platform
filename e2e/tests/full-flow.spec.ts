@@ -69,9 +69,13 @@ test('organizer publishes → participant takes → organizer grades → reports
   await partPage.getByRole('link', { name: title }).first().click();
   await partPage.getByRole('button', { name: /start quiz/i }).first().click();
   await partPage.waitForURL(/\/attempt\//);
-  await partPage.keyboard.press('1'); // Carbon dioxide
-  await partPage.getByRole('button', { name: 'Next' }).click();
-  await partPage.locator('textarea').first().fill('Chlorophyll reflects green light.');
+  // answer whichever question is shown (order depends on when the builder's autosave landed relative to the API-created question)
+  for (let i = 0; i < 2; i++) {
+    await expect(partPage.getByText(`Question ${i + 1} of 2`)).toBeVisible();
+    if (await partPage.getByText('Choose one answer').isVisible()) await partPage.keyboard.press('1'); // Carbon dioxide
+    else await partPage.locator('textarea').first().fill('Chlorophyll reflects green light.');
+    if (i === 0) await partPage.getByRole('button', { name: 'Next' }).click();
+  }
   await partPage.keyboard.press('Control+Enter');
   await partPage.getByRole('button', { name: 'Submit answers' }).click();
   await partPage.waitForURL(/\/results\//);
@@ -81,7 +85,7 @@ test('organizer publishes → participant takes → organizer grades → reports
   /* ── organizer grades (3 / 4) ── */
   await orgPage.goto(`/studio/quizzes/${quizId}/grading`);
   await orgPage.locator('section[aria-label="Submission queue"] li > button').first().click();
-  await orgPage.getByLabel(/^score/i).first().fill('3');
+  await orgPage.getByLabel(/^Accuracy, out of 4/).fill('3');
   await orgPage.getByLabel(/feedback/i).first().fill('Good explanation.');
   await orgPage.keyboard.press('Control+Enter');
   await expect.poll(async () => {
@@ -93,7 +97,7 @@ test('organizer publishes → participant takes → organizer grades → reports
   const summary = (await (await request.get(`${API}/quizzes/${quizId}/reports/summary`, { headers: auth })).json()).data;
   expect(summary.attempts).toBe(1);
   expect(Math.round(summary.avgPct)).toBe(80);
-  expect(summary.passRate).toBe(1);
+  expect(summary.passRate).toBe(100);
 
   await orgPage.goto(`/studio/quizzes/${quizId}/reports`);
   await expect(orgPage.getByText(/80\s?%/).first()).toBeVisible({ timeout: 15_000 });
