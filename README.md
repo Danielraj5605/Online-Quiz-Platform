@@ -1,101 +1,91 @@
-# Quizzo - Quiz Creation and Management System
+# Quizzo — Online Quiz Platform (v2)
 
-A web-based quiz creation and management system built with Node.js, Express, and MySQL.
+A role-based quiz platform: **Organizers** build, schedule, monitor, grade and report on quizzes; **Participants** discover, take, review and track progress; **Admins** moderate and manage the platform.
 
-## Features
+- **Web:** React 19 · Vite 7 · TypeScript · Tailwind v4 · TanStack Query · react-hook-form + zod · Radix
+- **API:** Express 5 · TypeScript · Prisma 7 · PostgreSQL · Redis (optional, in-memory fallback)
+- **Shared contract:** `shared/` (`@quiz/shared`) — zod schemas + DTO types used by both sides
+- Design: [`docs/DESIGN.md`](docs/DESIGN.md) · API: [`docs/API.md`](docs/API.md) · Frontend conventions: [`docs/FRONTEND.md`](docs/FRONTEND.md) · Decisions: [`docs/DECISIONS.md`](docs/DECISIONS.md)
 
-- User authentication (admin and regular users)
-- Quiz creation with multiple-choice questions
-- Automatic scoring based on correct answers
-- Role-based access control
+## Architecture
 
-## Setup Instructions
+```
+ Browser (React SPA) ──/api/v1──▶ Express API ─▶ routes → service → Prisma ─▶ PostgreSQL
+        │  access token (memory)        │  ├─ core/auth      JWT access + rotating refresh (httpOnly cookie)
+        │  refresh cookie (httpOnly)    │  ├─ core/policy    ownership & access checks (single place)
+        │                               │  ├─ core/cache     Redis | in-memory, tag invalidation, ETag
+        ▼                               │  └─ jobs           attempt-expiry sweeper, quiz lifecycle ticks
+   TanStack Query cache                 ▼
+                                   Redis (optional)
+```
 
-### Prerequisites
+Key design points
+- **Versioned quizzes:** publishing snapshots an immutable `QuizVersion`; attempts bind to a version, so editing a live quiz never corrupts past attempts. Re-grade across versions is explicit.
+- **Server-authoritative attempts:** the server sets `expiresAt`, autosaves answers, resumes after disconnects, and never sends the answer key before submission. Results reveal the key only per the quiz's `showAnswers` policy.
+- **Grading:** auto-grading (single/multi/true-false/short/numeric) with negative marking and partial credit; manual queue with rubrics for long answers.
+- **Security:** helmet, strict CORS allow-list, route-class rate limits, zod on every input, HTML-stripping sanitiser, refresh-token rotation with reuse detection, role re-read from DB (not trusted from JWT), audit log on privileged actions.
 
-- Node.js (v14 or higher)
-- MySQL (v5.7 or higher)
-- npm (Node Package Manager)
+## Quick start (local)
 
-### Database Setup
+Prerequisites: Node 20+, a PostgreSQL database (e.g. Neon) — Redis optional.
 
-1. Log in to MySQL:
-   ```
-   mysql -u root -p1234
-   ```
+```bash
+npm install
+cp backend/.env.example backend/.env        # set DATABASE_URL (and JWT_SECRET for production)
+npm run db:migrate                           # applies prisma migrations
+npm run db:seed                              # ⚠ wipes app tables, loads demo data
+npm run dev:api                              # http://localhost:5000
+npm run dev:web                              # http://localhost:5173 (proxies /api)
+```
 
-2. Create the database:
-   ```sql
-   CREATE DATABASE IF NOT EXISTS quizdb;
-   USE quizdb;
-   ```
+### Docker
+```bash
+docker compose up --build        # web :8080, api :5000, postgres :5432, redis :6379
+docker compose exec api npx tsx prisma/seed.ts   # optional demo data
+```
 
-3. Run the setup script:
-   ```sql
-   source setup_db.sql
-   ```
+## Environment variables (`backend/.env`)
 
-### Application Setup
+| Var | Required | Purpose |
+|---|---|---|
+| `DATABASE_URL` | yes | Postgres connection string |
+| `JWT_SECRET` | prod | ≥ 32 chars. In dev an ephemeral secret is generated (sessions reset on restart) |
+| `REDIS_URL` | no | Shared cache; in-memory fallback if unset |
+| `CORS_ORIGINS` | prod | Comma-separated allowed origins (default `http://localhost:5173`) |
+| `TRUST_PROXY` | no | `true` behind a reverse proxy |
+| `PORT`, `NODE_ENV` | no | default `5000`, `development` |
 
-1. Install dependencies:
-   ```
-   npm install
-   ```
+The frontend needs no env vars in dev (Vite proxies `/api`). To point at another API set `VITE_API_URL`.
 
-2. Start the server:
-   ```
-   npm start
-   ```
+## Scripts (repo root)
 
-3. Access the application:
-   Open your browser and navigate to `http://localhost:3000`
+| Script | Does |
+|---|---|
+| `npm run dev:api` / `dev:web` | start API / web in watch mode |
+| `npm run build` | build API (tsup) and web (Vite) |
+| `npm run typecheck` · `npm run lint` | across both apps |
+| `npm test` | Vitest — API unit + integration (needs `DATABASE_URL`), web component tests |
+| `npm run e2e` | Playwright end-to-end (starts both servers) |
+| `npm run db:migrate` · `db:seed` | Prisma migrate · demo seed |
 
-## Usage
+## Demo accounts (after `npm run db:seed`)
 
-### Admin Login
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@quizzo.dev` | `Admin#12345` |
+| Organizer | `organizer@quizzo.dev`, `ola@quizzo.dev` | `Organizer#12345` |
+| Participant | `participant@quizzo.dev`, `learner01..24@quizzo.dev` | `Participant#12345` |
 
-- Email: `admin@gmail.com`
-- Password: `admin123`
+Quiz access code for the private Algebra quiz: `ALGEBRA24`.
 
-### Creating a Quiz
+## Repository layout
+```
+backend/   Express API (src/core, src/modules/*, prisma/, tests/)
+frontend/  React app (src/app, src/components, src/features/{auth,participant,organizer,admin}, src/lib)
+shared/    @quiz/shared — contract (schemas, DTO types)
+e2e/       Playwright tests + visual QA helpers
+docs/      DESIGN · API · FRONTEND · DECISIONS · PROGRESS
+```
 
-1. Log in as an admin
-2. Navigate to the "Create Quiz" page
-3. Enter quiz title and time limit
-4. Add questions with multiple-choice options
-5. Select the correct answer for each question
-6. Click "Save Quiz" to save the quiz to the database
-
-### Taking a Quiz
-
-1. Log in as a regular user
-2. Select a quiz from the available quizzes
-3. Answer the questions within the time limit
-4. Submit the quiz to see your score
-
-## Database Schema
-
-### Users Table
-- `user_id`: Primary key
-- `username`: User's name
-- `email`: User's email (unique)
-- `password`: User's password
-- `role`: User's role (admin or user)
-
-### Quizzes Table
-- `quiz_id`: Primary key
-- `quiz_name`: Name of the quiz
-- `quiz_description`: Description of the quiz
-- `total_marks`: Total marks for the quiz
-- `created_at`: Timestamp of creation
-
-### Questions Table
-- `question_id`: Primary key
-- `quiz_id`: Foreign key to quizzes table
-- `question_text`: The question text
-- `correct_option`: Index of the correct option
-
-### Options Table
-- `option_id`: Primary key
-- `question_id`: Foreign key to questions table
-- `option_text`: The option text 
+## Known limitations
+See [`docs/PROGRESS.md`](docs/PROGRESS.md#known-limitations).
