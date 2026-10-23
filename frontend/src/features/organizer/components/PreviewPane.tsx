@@ -10,7 +10,6 @@ import { fmtDuration } from '@/lib/utils';
 export function PreviewPane({ title, questions, timeLimitSec, maxAttempts, source }: {
   title: string; questions: AttemptQuestionDto[]; timeLimitSec: number | null; maxAttempts: number; source: string;
 }) {
-  let lastSection: string | null | undefined;
   return (
     <div className="mx-auto grid max-w-2xl gap-4" aria-label="Participant preview">
       <div className="rounded-md bg-teal-soft px-3 py-2 text-sm text-teal" role="note">{source}</div>
@@ -24,8 +23,7 @@ export function PreviewPane({ title, questions, timeLimitSec, maxAttempts, sourc
       </header>
       {questions.length === 0 && <p className="text-center text-sm text-muted">Add questions to see them here.</p>}
       {questions.map((q, i) => {
-        const showSection = q.sectionTitle !== lastSection && q.sectionTitle;
-        lastSection = q.sectionTitle;
+        const showSection = q.sectionTitle && q.sectionTitle !== questions[i - 1]?.sectionTitle;
         return (
           <div key={q.id} className="grid gap-3">
             {showSection && <h3 className="mt-2 font-display text-lg font-semibold">{q.sectionTitle}</h3>}

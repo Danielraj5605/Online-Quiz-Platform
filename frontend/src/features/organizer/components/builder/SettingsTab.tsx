@@ -62,7 +62,7 @@ export function SettingsTab() {
     try { await actions.patchQuiz(patch, before); } catch { saved.current = prev; }
   };
   const flushRef = useRef(flush);
-  flushRef.current = flush;
+  useEffect(() => { flushRef.current = flush; });
   useEffect(() => actions.registerFlusher(() => flushRef.current()), [actions]);
   useEffect(() => () => { void flushRef.current(); }, []);
 
@@ -90,7 +90,7 @@ export function SettingsTab() {
         <FormField label="Description" hint="Shown to participants before they start.">
           <Textarea rows={3} value={f.description} maxLength={5000} onChange={(e) => update((s) => ({ ...s, description: e.target.value }))} />
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid items-start gap-5 sm:grid-cols-2">
           <FormField label="Category">
             <Select value={f.categoryId ?? NONE} onValueChange={(v) => update((s) => ({ ...s, categoryId: v === NONE ? null : v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -131,7 +131,7 @@ export function SettingsTab() {
         <FormField label="Attempts allowed per participant" error={errors['settings.maxAttempts']} className="sm:max-w-48">
           <Input type="number" min={1} max={50} value={f.settings.maxAttempts} onChange={(e) => setS({ maxAttempts: Math.min(50, Math.max(1, Number(e.target.value) || 1)) })} />
         </FormField>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid items-start gap-5 sm:grid-cols-2">
           <FormField label="Opens at" hint="Leave empty to open as soon as it's published."><Input type="datetime-local" value={toLocalInput(f.opensAt)} onChange={(e) => update((s) => ({ ...s, opensAt: fromLocalInput(e.target.value) }))} /></FormField>
           <FormField label="Closes at" error={errors.closesAt} hint="Attempts in progress at closing time are submitted automatically."><Input type="datetime-local" value={toLocalInput(f.closesAt)} onChange={(e) => update((s) => ({ ...s, closesAt: fromLocalInput(e.target.value) }))} /></FormField>
         </div>
@@ -143,7 +143,7 @@ export function SettingsTab() {
       </Section>
 
       <Section title="Scoring" description="How answers become a grade.">
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid items-start gap-5 sm:grid-cols-2">
           <FormField label="Pass mark (%)" error={errors['settings.passMarkPct']}>
             <Input type="number" min={0} max={100} value={f.settings.passMarkPct} onChange={(e) => setS({ passMarkPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) })} />
           </FormField>

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- exports a hook/helper next to its component on purpose */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Check, Loader2 } from 'lucide-react';
 import { fmtDate } from '@/lib/utils';

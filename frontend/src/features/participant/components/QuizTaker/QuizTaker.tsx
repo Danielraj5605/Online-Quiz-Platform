@@ -37,18 +37,14 @@ export function QuizTaker({ attempt }: { attempt: AttemptViewDto }) {
   const submittingRef = useRef(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
-  const qStart = useRef(Date.now());
+  const qStart = useRef(0);
 
   // ── autosave queue (one per attempt) ───────────────────────────────────
-  const queueRef = useRef<SaveQueue | null>(null);
-  if (!queueRef.current) {
-    queueRef.current = new SaveQueue({
-      attemptId: attempt.id,
-      save: (items) => attemptsApi.saveAnswers(attempt.id, { answers: items }),
-      onStatus: (status, pending) => setSave({ status, pending }),
-    });
-  }
-  const queue = queueRef.current;
+  const [queue] = useState(() => new SaveQueue({
+    attemptId: attempt.id,
+    save: (items) => attemptsApi.saveAnswers(attempt.id, { answers: items }),
+    onStatus: (status, pending) => setSave({ status, pending }),
+  }));
 
   const apply = useCallback((action: AnswerAction, enqueueId?: string) => {
     const next = answerReducer(answersRef.current, action);
@@ -62,6 +58,7 @@ export function QuizTaker({ attempt }: { attempt: AttemptViewDto }) {
 
   // restore unsent answers from a previous session (reload / crash / offline) and push them
   useEffect(() => {
+    qStart.current = Date.now();
     const restored = queue.restored();
     if (restored.length) { apply({ type: 'restore', items: restored }); void queue.flush(); }
     return () => queue.dispose();
@@ -125,7 +122,7 @@ export function QuizTaker({ attempt }: { attempt: AttemptViewDto }) {
   }, [attempt.id, commitTime, current, navigate, qc, queue]);
 
   const submitRef = useRef(submit);
-  submitRef.current = submit;
+  useEffect(() => { submitRef.current = submit; });
   const onExpire = useCallback(() => { void submitRef.current(true); }, []);
 
   // server said the attempt is over (late save): show the dialog instead of silently failing

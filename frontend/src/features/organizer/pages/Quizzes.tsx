@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Archive, BarChart3, Copy, FilePlus2, MoreHorizontal, Pencil, Radio, Search, Trash2 } from 'lucide-react';
@@ -27,15 +27,18 @@ export default function Quizzes() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const [params, setParams] = useSearchParams();
-  const [status, setStatus] = useState<QuizStatus | 'ALL'>('ALL');
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState('-updatedAt');
+  const [status, setStatusRaw] = useState<QuizStatus | 'ALL'>('ALL');
+  const [search, setSearchRaw] = useState('');
+  const [sort, setSortRaw] = useState('-updatedAt');
   const [page, setPage] = useState(1);
+  // changing a filter always returns to the first page
+  const setStatus = (v: QuizStatus | 'ALL') => { setStatusRaw(v); setPage(1); };
+  const setSearch = (v: string) => { setSearchRaw(v); setPage(1); };
+  const setSort = (v: string) => { setSortRaw(v); setPage(1); };
   const [creating, setCreating] = useState(params.get('new') === '1');
   const [pending, setPending] = useState<Pending>(null);
   const q = useDebounced(search, 300);
 
-  useEffect(() => { setPage(1); }, [status, q, sort]);
 
   const query = { page, pageSize: 12, sort, q: q || undefined, status: status === 'ALL' ? undefined : status, mine: true };
   const listKey = keys.quizzes.list(query);

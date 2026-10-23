@@ -12,10 +12,7 @@ import { keys } from '@/lib/query/keys';
 import { useApiMutation, useApiQuery } from '@/lib/query/hooks';
 import { fmtDate } from '@/lib/utils';
 import { CohortFormDialog } from './CohortFormDialog';
-
-/** usernames or emails separated by commas, spaces or new lines */
-export const parseIdentifiers = (text: string) =>
-  [...new Set(text.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean))].slice(0, 500);
+import { parseIdentifiers } from './identifiers';
 
 export function CohortDetail({ id, onBack, onDeleted }: { id: string; onBack: () => void; onDeleted: () => void }) {
   const { data, isPending } = useApiQuery(keys.cohorts.detail(id), () => cohortsApi.get(id));

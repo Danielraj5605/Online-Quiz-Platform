@@ -29,10 +29,9 @@ export function QuestionCard({ q, number, open, onToggle, onMove, canMove, handl
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const mounted = useRef(true);
   const qid = useRef(q.id);
-  qid.current = q.id;
   const stillExists = useRef(true);
   const { quiz } = useBuilder();
-  stillExists.current = quiz.questions.some((x) => x.id === q.id);
+  const exists = quiz.questions.some((x) => x.id === q.id);
 
   const flush = async () => {
     clearTimeout(timer.current);
@@ -47,7 +46,7 @@ export function QuestionCard({ q, number, open, onToggle, onMove, canMove, handl
     try { await actions.updateQuestion(qid.current, input, before); } catch { saved.current = JSON.stringify(before); savedInput.current = before; }
   };
   const flushRef = useRef(flush);
-  flushRef.current = flush;
+  useEffect(() => { qid.current = q.id; stillExists.current = exists; flushRef.current = flush; });
 
   useEffect(() => actions.registerFlusher(() => flushRef.current()), [actions]);
   useEffect(() => () => {
@@ -127,7 +126,7 @@ export function NewQuestionCard({ sectionId, number, onCreated, onDiscard, handl
     try { onCreated(await actions.addQuestion(toInput(latest.current))); } catch { creating.current = false; }
   };
   const tryRef = useRef(tryCreate);
-  tryRef.current = tryCreate;
+  useEffect(() => { tryRef.current = tryCreate; });
   useEffect(() => actions.registerFlusher(() => tryRef.current()), [actions]);
 
   const change = (next: QuestionDraft) => {

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- exports a hook/helper next to its component on purpose */
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -268,8 +269,10 @@ export function BuilderProvider({ id, children, fallback }: { id: string; childr
   const layout = useMemo(() => (quiz ? buildLayout(quiz) : []), [quiz]);
   const ctx = useMemo<Ctx | null>(() => (quiz ? { id, quiz, layout, revision, save, history, actions } : null), [id, quiz, layout, revision, save, history, actions]);
 
+  /* eslint-disable react-hooks/refs -- refs (id aliases, flushers) are only touched inside action callbacks, never while rendering */
   if (!ctx) return <>{fallback({ loading: q.isPending, error: q.error ?? undefined })}</>;
   return <BuilderContext.Provider value={ctx}>{children(ctx.quiz)}</BuilderContext.Provider>;
+  /* eslint-enable react-hooks/refs */
 }
 
 /* helpers */

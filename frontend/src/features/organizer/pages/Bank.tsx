@@ -10,7 +10,8 @@ import type { BankQuestionDto } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 import { useApiMutation, useApiQuery, usePagedQuery } from '@/lib/query/hooks';
 import { useDebounced, useDocumentTitle } from '@/lib/hooks';
-import { BankQuestionForm, TYPE_LABEL, type BankFormOut } from '../components/bank/BankQuestionForm';
+import { BankQuestionForm, type BankFormOut } from '../components/bank/BankQuestionForm';
+import { TYPE_LABEL } from '../components/bank/labels';
 
 export default function Bank() {
   useDocumentTitle('Question bank');

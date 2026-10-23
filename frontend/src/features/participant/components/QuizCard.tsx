@@ -1,12 +1,10 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CalendarClock, Clock, HelpCircle, Play, RotateCcw } from 'lucide-react';
 import type { Difficulty, QuizOverviewDto } from '@quiz/shared';
-import { attemptsApi } from '@/lib/api/attempts';
-import { useApiMutation } from '@/lib/query/hooks';
-import { keys } from '@/lib/query/keys';
 import { fmtDate, fmtDuration } from '@/lib/utils';
 import { Badge, Button, Card, type Tone } from '@/components/ui';
 import { Rating } from './Rating';
+import { useStartQuiz } from './useStartQuiz';
 
 const DIFF: Record<Difficulty, { label: string; tone: Tone }> = {
   EASY: { label: 'Easy', tone: 'success' },
@@ -14,15 +12,6 @@ const DIFF: Record<Difficulty, { label: string; tone: Tone }> = {
   HARD: { label: 'Hard', tone: 'accent' },
 };
 export const DifficultyBadge = ({ d }: { d: Difficulty }) => <Badge tone={DIFF[d].tone}>{DIFF[d].label}</Badge>;
-
-/** Start (or resume) an attempt and jump into taking mode. */
-export function useStartQuiz(quizId: string) {
-  const navigate = useNavigate();
-  return useApiMutation(() => attemptsApi.start(quizId), {
-    invalidate: [keys.catalog.all],
-    onSuccess: (a) => navigate(`/attempt/${a.id}`),
-  });
-}
 
 export function StartButton({ quiz, size = 'md', className }: { quiz: QuizOverviewDto; size?: 'sm' | 'md' | 'lg'; className?: string }) {
   const start = useStartQuiz(quiz.id);

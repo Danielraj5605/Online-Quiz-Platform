@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- exports a hook/helper next to its component on purpose */
 import { useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Check, CircleAlert, Rocket } from 'lucide-react';

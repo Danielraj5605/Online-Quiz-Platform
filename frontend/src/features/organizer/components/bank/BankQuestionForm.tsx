@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 import { Plus, Trash2 } from 'lucide-react';
 import { bankQuestionSchema, hasOptions, questionInputSchema, QUESTION_TYPES, type QuestionType } from '@quiz/shared';
 import { Button, FormField, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@/components/ui';
 import type { BankQuestionDto, Category } from '@/lib/api/types';
+import { TYPE_LABEL } from './labels';
 
 /** Same cross-field rules the API applies to quiz questions (exactly one correct option, etc.). */
 const formSchema = bankQuestionSchema.superRefine((v, ctx) => {
@@ -14,11 +15,6 @@ const formSchema = bankQuestionSchema.superRefine((v, ctx) => {
 });
 export type BankFormIn = z.input<typeof formSchema>;
 export type BankFormOut = z.output<typeof formSchema>;
-
-export const TYPE_LABEL: Record<QuestionType, string> = {
-  MCQ_SINGLE: 'Single choice', MCQ_MULTI: 'Multiple choice', TRUE_FALSE: 'True / False',
-  SHORT_ANSWER: 'Short answer', NUMERIC: 'Numeric', LONG_ANSWER: 'Long answer (manual grading)',
-};
 
 const optionsFor = (t: QuestionType): { text: string; isCorrect: boolean }[] =>
   t === 'TRUE_FALSE' ? [{ text: 'True', isCorrect: true }, { text: 'False', isCorrect: false }]
@@ -42,10 +38,11 @@ interface Props {
 
 export function BankQuestionForm({ question, categories, submitting, onSubmit, onCancel }: Props) {
   const form = useForm<BankFormIn, unknown, BankFormOut>({ resolver: zodResolver(formSchema), defaultValues: defaults(question) });
-  const { register, control, watch, setValue, handleSubmit, formState: { errors } } = form;
+  const { register, control, setValue, handleSubmit, formState: { errors } } = form;
   const options = useFieldArray({ control, name: 'options' });
   const rubric = useFieldArray({ control, name: 'config.rubric' });
-  const type = watch('type');
+  const type = useWatch({ control, name: 'type' });
+  const opts = useWatch({ control, name: 'options' });
   const [tagText, setTagText] = useState((question?.tags ?? []).join(', '));
   const [acceptedText, setAcceptedText] = useState((question?.config.acceptedAnswers ?? []).join('\n'));
   const [numText, setNumText] = useState(question?.config.numericAnswer != null ? String(question.config.numericAnswer) : '');
@@ -56,7 +53,7 @@ export function BankQuestionForm({ question, categories, submitting, onSubmit, o
   };
   const setCorrect = (i: number, on: boolean) => {
     const multi = type === 'MCQ_MULTI';
-    options.fields.forEach((_, k) => setValue(`options.${k}.isCorrect`, multi ? (k === i ? on : watch(`options.${k}.isCorrect`)) : k === i, { shouldDirty: true, shouldValidate: true }));
+    options.fields.forEach((_, k) => setValue(`options.${k}.isCorrect`, multi ? (k === i ? on : !!opts?.[k]?.isCorrect) : k === i, { shouldDirty: true, shouldValidate: true }));
   };
   const optionError = (errors.options as { message?: string } | undefined)?.message ?? (errors.options as { root?: { message?: string } } | undefined)?.root?.message;
 
@@ -85,7 +82,7 @@ export function BankQuestionForm({ question, categories, submitting, onSubmit, o
             <div key={f.id} className="flex items-center gap-2">
               <input
                 type={type === 'MCQ_MULTI' ? 'checkbox' : 'radio'} name="correct"
-                checked={!!watch(`options.${i}.isCorrect`)}
+                checked={!!opts?.[i]?.isCorrect}
                 onChange={(e) => setCorrect(i, e.target.checked)}
                 className="size-5 shrink-0 accent-[var(--accent)]"
                 aria-label={`Option ${i + 1} is correct`}

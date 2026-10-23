@@ -4,8 +4,7 @@ import type { AttemptQuestionDto } from '@quiz/shared';
 import { cn } from '@/lib/utils';
 import { Input, Textarea } from '@/components/ui';
 import type { AnswerEntry } from './answerState';
-
-export const optionLetter = (i: number) => String.fromCharCode(65 + i);
+import { optionLetter } from './optionLetter';
 
 const TYPE_HINT: Record<AttemptQuestionDto['type'], string> = {
   MCQ_SINGLE: 'Choose one answer',

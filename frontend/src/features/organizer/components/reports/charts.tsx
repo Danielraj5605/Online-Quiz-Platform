@@ -1,5 +1,5 @@
 import { useId, useState, type ReactNode } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
 import type { TooltipContentProps } from 'recharts';
 import { Table2, BarChart3 } from 'lucide-react';
@@ -50,14 +50,14 @@ export function ChartCard({ title, description, summary, table, children, classN
   );
 }
 
-type LabelArgs = { x?: number | string; y?: number | string; width?: number | string; value?: unknown; index?: number };
-
 export interface Bucket { bucket: string; count: number }
 
 /** Score histogram: one hue, ≤24px columns with rounded caps, hairline grid, the peak labelled directly. */
 export function ScoreHistogram({ data }: { data: Bucket[] }) {
   const max = Math.max(0, ...data.map((d) => d.count));
   const peak = data.find((d) => d.count === max && max > 0)?.bucket;
+  // only the most common band gets a direct label; the rest read from the axis, tooltip and table
+  const plotted = data.map((d) => ({ ...d, peak: d.bucket === peak ? d.count : null }));
   const total = data.reduce((a, b) => a + b.count, 0);
   const summary = total
     ? `Histogram of ${total} scores in ten 10-point bands. Most common band: ${peak}%, with ${max}.`
@@ -77,20 +77,14 @@ export function ScoreHistogram({ data }: { data: Bucket[] }) {
     >
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 22, right: 8, bottom: 0, left: -12 }} barCategoryGap="22%">
+          <BarChart data={plotted} margin={{ top: 22, right: 8, bottom: 0, left: -12 }} barCategoryGap="22%">
             <CartesianGrid vertical={false} stroke={GRID} strokeWidth={1} />
             <XAxis dataKey="bucket" tick={axisTick} tickLine={false} axisLine={{ stroke: GRID }} interval={0} tickFormatter={(v: string) => v.split('-')[0]!} />
             <YAxis allowDecimals={false} tick={axisTick} tickLine={false} axisLine={false} width={40} />
             <Tooltip cursor={{ fill: 'var(--surface-2)' }} content={(p) => <ChartTip {...p} unit="attempt" />} />
-            <Bar
-              dataKey="count" fill={SERIES} maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false}
-              label={(p: LabelArgs) => {
-                const v = Number(p.value ?? 0);
-                return data[p.index ?? -1]?.bucket === peak && v > 0 ? (
-                  <text x={Number(p.x ?? 0) + Number(p.width ?? 0) / 2} y={Number(p.y ?? 0) - 6} textAnchor="middle" fill="var(--text)" fontSize={12} fontWeight={600} className="num">{v}</text>
-                ) : <g />;
-              }}
-            />
+            <Bar dataKey="count" fill={SERIES} maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false}>
+              <LabelList dataKey="peak" position="top" fill="var(--text)" fontSize={12} fontWeight={600} formatter={(v: unknown) => (v == null ? '' : String(v))} />
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

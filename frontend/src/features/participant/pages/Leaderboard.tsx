@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Medal, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { useAuth } from '@/app/auth';
 import { attemptsApi } from '@/lib/api/attempts';
 import { useApiQuery } from '@/lib/query/hooks';
@@ -12,8 +12,13 @@ import {
 } from '@/components/ui';
 
 const Rank = ({ n }: { n: number }) => (
-  <span className="num grid w-8 place-items-center font-semibold">
-    {n <= 3 ? <Medal className={cn('size-5', n === 1 ? 'text-warning' : n === 2 ? 'text-muted' : 'text-accent')} aria-label={`Rank ${n}`} /> : n}
+  <span
+    className={cn(
+      'num grid size-8 place-items-center rounded-full text-sm font-semibold',
+      n === 1 ? 'bg-warning-soft text-warning ring-1 ring-warning' : n === 2 ? 'bg-surface-2 text-text ring-1 ring-border-strong' : n === 3 ? 'bg-accent-soft text-accent ring-1 ring-accent' : 'text-muted',
+    )}
+  >
+    <span className="sr-only">Rank </span>{n}
   </span>
 );
 

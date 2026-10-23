@@ -1,4 +1,5 @@
 import { History, RotateCcw } from 'lucide-react';
+import { toast } from 'sonner';
 import { Badge, Button, ConfirmDialog, Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger, EmptyState, Skeleton } from '@/components/ui';
 import { quizzesApi } from '@/lib/api';
 import { keys } from '@/lib/query/keys';
@@ -11,7 +12,7 @@ export function VersionsPanel() {
   const versions = useApiQuery(keys.quizzes.versions(id), () => quizzesApi.versions(id));
   const regrade = useApiMutation((versionId?: string) => quizzesApi.regrade(id, versionId), {
     invalidate: [keys.reports.all, keys.grading.all, keys.organizer.dashboard], silent: true,
-    onSuccess: (r) => { import('sonner').then(({ toast }) => toast.success(r.regraded ? `Re-graded ${r.regraded} attempt${r.regraded === 1 ? '' : 's'}` : 'No attempts needed re-grading')); },
+    onSuccess: (r) => { toast.success(r.regraded ? `Re-graded ${r.regraded} attempt${r.regraded === 1 ? '' : 's'}` : 'No attempts needed re-grading'); },
   });
   const failToast = regrade.error;
 

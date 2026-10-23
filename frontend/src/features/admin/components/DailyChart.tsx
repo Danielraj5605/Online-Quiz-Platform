@@ -1,11 +1,11 @@
-import { useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Table2, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 export interface DayPoint { date: string; count: number }
 
-const W = 640, H = 220, PAD = { l: 36, r: 8, t: 12, b: 26 };
+const H = 220, PAD = { l: 36, r: 8, t: 12, b: 26 };
 const day = (iso: string) => new Date(`${iso}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
 /** Nice axis ceiling so gridlines land on round numbers. */
@@ -26,11 +26,21 @@ export function DailyChart({ title, description, data, tone = 'accent', unit }: 
   const [active, setActive] = useState<number | null>(null);
   const [asTable, setAsTable] = useState(false);
   const id = useId();
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [W, setW] = useState(560);
+  // Draw at the real pixel width so axis text stays a readable 11px on phones.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => { if (e) setW(Math.max(260, Math.round(e.contentRect.width))); });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [asTable]);
   const total = useMemo(() => data.reduce((a, d) => a + d.count, 0), [data]);
   const max = niceMax(Math.max(0, ...data.map((d) => d.count)));
   const iw = W - PAD.l - PAD.r, ih = H - PAD.t - PAD.b;
   const step = iw / Math.max(1, data.length);
-  const bw = Math.max(3, Math.min(14, step - 4));
+  const bw = Math.max(3, Math.min(14, step - 3));
   const y = (v: number) => PAD.t + ih - (v / max) * ih;
   const ticks = [0, 0.5, 1].map((f) => Math.round(max * f));
   const peak = data.reduce<DayPoint | null>((b, d) => (!b || d.count > b.count ? d : b), null);
@@ -70,10 +80,12 @@ export function DailyChart({ title, description, data, tone = 'accent', unit }: 
             </table>
           </div>
         ) : (
-          <div className="relative">
+          <div ref={boxRef} className="relative">
             <svg
               viewBox={`0 0 ${W} ${H}`}
-              className="h-auto w-full"
+              width={W}
+              height={H}
+              className="block max-w-full"
               role="img"
               aria-labelledby={`${id}-t`}
               onMouseLeave={() => setActive(null)}
@@ -99,7 +111,7 @@ export function DailyChart({ title, description, data, tone = 'accent', unit }: 
                         opacity={active == null || active === i ? 1 : 0.45}
                       />
                     )}
-                    {(i === 0 || i === data.length - 1 || i % 7 === 0) && (
+                    {(data.length - 1 - i) % 7 === 0 && (
                       <text x={x + bw / 2} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--text-muted)">{day(d.date)}</text>
                     )}
                   </g>

@@ -35,7 +35,10 @@ export function GradeWorkspace({ quizId }: { quizId: string }) {
   const setParams = (next: Record<string, string | null>) =>
     setSp((cur) => {
       const p = new URLSearchParams(cur);
-      for (const [k, v] of Object.entries(next)) (v === null ? p.delete(k) : p.set(k, v));
+      for (const [k, v] of Object.entries(next)) {
+        if (v === null) p.delete(k);
+        else p.set(k, v);
+      }
       return p;
     }, { replace: true });
 
@@ -119,8 +122,8 @@ export function GradeWorkspace({ quizId }: { quizId: string }) {
       toast.success(r.isFinal ? `Fully graded · ${Math.round(r.percentage)}%` : 'Saved');
       if (status === 'pending' && nextId) open(nextId);
       else if (status !== 'pending' && ids[idx + 1]) open(ids[idx + 1]!);
-    } catch {
-      /* global handler already toasted */
+    } catch (e) {
+      void e; // the global mutation handler has already shown the error
     }
   };
 

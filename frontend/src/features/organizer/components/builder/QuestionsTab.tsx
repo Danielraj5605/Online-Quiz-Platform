@@ -159,7 +159,8 @@ export function QuestionsTab() {
   const renderContainer = (c: Layout[number]) => {
     const dr = drafts.filter((d) => d.sectionId === c.id);
     return (
-      <Container key={cid(c.id)} id={c.id} empty={c.questionIds.length === 0 && dr.length === 0 && (hasSections || !!activeId)} hint={c.id ? 'No questions in this section yet.' : 'Drop here to take a question out of its section.'}>
+      <div key={cid(c.id)} className="grid gap-2">
+      <Container id={c.id} empty={c.questionIds.length === 0 && dr.length === 0 && (hasSections || !!activeId)} hint={c.id ? 'No questions in this section yet.' : 'Drop here to take a question out of its section.'}>
         <SortableContext items={c.questionIds.map(qid)} strategy={verticalListSortingStrategy}>
           {c.questionIds.map((id) => {
             const q = questions.get(id);
@@ -180,11 +181,12 @@ export function QuestionsTab() {
             onDiscard={() => setDrafts((x) => x.filter((y) => y.key !== d.key))}
           />
         ))}
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => addDraft(c.id)}><Plus aria-hidden="true" /> Add question</Button>
-          <Button variant="ghost" size="sm" onClick={() => setBankFor({ sectionId: c.id })}><BookOpen aria-hidden="true" /> From bank</Button>
-        </div>
       </Container>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => addDraft(c.id)}><Plus aria-hidden="true" /> Add question</Button>
+        <Button variant="ghost" size="sm" onClick={() => setBankFor({ sectionId: c.id })}><BookOpen aria-hidden="true" /> From bank</Button>
+      </div>
+      </div>
     );
   };
 
@@ -195,7 +197,7 @@ export function QuestionsTab() {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted" aria-live="polite"><span className="num font-medium text-text">{total}</span> question{total === 1 ? '' : 's'} · <span className="num font-medium text-text">{points}</span> points total</p>
+        <p className="text-sm text-muted" aria-live="polite"><span className="num font-medium text-text">{total}</span> question{total === 1 ? '' : 's'} · <span className="num font-medium text-text">{points}</span> point{points === 1 ? '' : 's'} total</p>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={() => setBankFor({ sectionId: null })}><BookOpen aria-hidden="true" /> Import from bank</Button>
           <Button

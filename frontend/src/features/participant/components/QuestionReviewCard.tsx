@@ -2,7 +2,7 @@ import { Check, CircleDashed, Clock, Minus, X } from 'lucide-react';
 import type { ResultQuestionReview } from '@quiz/shared';
 import { cn, fmtDuration } from '@/lib/utils';
 import { Badge, Card } from '@/components/ui';
-import { optionLetter } from './QuizTaker/QuestionView';
+import { optionLetter } from './QuizTaker/optionLetter';
 
 function Verdict({ r }: { r: ResultQuestionReview }) {
   if (r.needsManual) return <Badge tone="warning"><CircleDashed className="size-3" aria-hidden="true" /> Awaiting grading</Badge>;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Archive, BarChart3, ClipboardCheck, Copy, Lock, MoreHorizontal, Radio, Redo2, Rocket, RotateCcw, Undo2 } from 'lucide-react';
@@ -48,7 +48,7 @@ function BuilderView({ quiz }: { quiz: QuizDetailDto }) {
   const qc = useQueryClient();
   const [params, setParams] = useSearchParams();
   const tab = params.get('tab') ?? 'questions';
-  const [confirmUnload, setConfirmUnload] = useState(false);
+  const confirmUnload = save.status === 'saving';
   useDocumentTitle(`${quiz.title} · Builder`);
 
   // Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z, Ctrl+Y — but leave text-field undo alone
@@ -64,9 +64,6 @@ function BuilderView({ quiz }: { quiz: QuizDetailDto }) {
   }, [actions]);
 
   // don't lose a pending debounce or in-flight save by closing the tab
-  useEffect(() => {
-    setConfirmUnload(save.status === 'saving');
-  }, [save.status]);
   useEffect(() => {
     if (!confirmUnload) return;
     const h = (e: BeforeUnloadEvent) => { e.preventDefault(); };

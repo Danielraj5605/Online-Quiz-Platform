@@ -51,8 +51,8 @@ export default function Discover() {
         actions={<Button variant="outline" asChild><Link to="/join"><KeyRound aria-hidden="true" /> Enter code</Link></Button>}
       />
 
-      <form role="search" aria-label="Filter quizzes" className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_12rem_10rem_10rem_auto]" onSubmit={(e) => e.preventDefault()}>
-        <div className="grid gap-1.5">
+      <form role="search" aria-label="Filter quizzes" className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-[1fr_12rem_10rem_10rem_auto]" onSubmit={(e) => e.preventDefault()}>
+        <div className="col-span-2 grid gap-1.5 lg:col-span-1">
           <Label htmlFor="disc-q">Search</Label>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden="true" />
@@ -79,12 +79,12 @@ export default function Discover() {
             </SelectContent>
           </Select>
         </div>
-        <div className="grid gap-1.5">
+        <div className="col-span-2 grid gap-1.5 lg:col-span-1">
           <Label htmlFor="disc-tag">Tag</Label>
           <Input id="disc-tag" placeholder="e.g. algebra" value={tag} onChange={(e) => set({ tag: e.target.value || null })} />
         </div>
         {filtered && (
-          <div className="flex items-end">
+          <div className="col-span-2 flex items-end lg:col-span-1">
             <Button type="button" variant="ghost" onClick={clear}><X aria-hidden="true" /> Clear</Button>
           </div>
         )}

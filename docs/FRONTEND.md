@@ -55,3 +55,9 @@ Use token utilities only — `bg-bg bg-surface bg-surface-2 border-border border
 
 ## Checks
 `npm run typecheck && npm run lint && npm run test && npm run build && npm run check:contrast` (in `frontend/`). Visual QA: `node e2e/screenshots.mjs <baseUrl> <outDir> /path1,/path2` (set `MSYS_NO_PATHCONV=1` on Git Bash) captures 375px/1280px × light/dark.
+
+## Cross-cutting polish (`components/polish`)
+- `GlobalPolish` is mounted once at the router root: a thin top progress rule while a lazy route chunk is loading (`RouteProgress` — routes use react-router `lazy`, so the old page stays on screen otherwise) and the `?` keyboard-shortcuts dialog.
+- `openShortcuts()` (from `components/polish/shortcuts-event`) opens the dialog from anywhere; it is also in the command palette. Add new shortcut rows in `keyboard-shortcuts.tsx` `GROUPS` when a page adds keyboard handling.
+- Command palette adds role-aware actions (`roleActions` in `components/ui/command-palette.tsx`): participant — join with code; organizer — create quiz (`/studio/quizzes?new=1`); admin — review open reports.
+- Admin charts: `features/admin/components/DailyChart.tsx` (single-series SVG bars, hover tooltip, table view). Reuse it for any per-day series.

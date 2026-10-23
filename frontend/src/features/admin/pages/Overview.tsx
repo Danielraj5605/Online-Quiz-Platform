@@ -29,7 +29,7 @@ export default function Overview() {
             <StatCard label="Users" value={data.totals.users.toLocaleString()} hint={`+${data.totals.newUsers7d} this week`} icon={<Users />} />
             <StatCard label="Quizzes" value={data.totals.quizzes.toLocaleString()} icon={<FileQuestion />} />
             <StatCard label="Attempts" value={data.totals.attempts.toLocaleString()} icon={<Activity />} />
-            <StatCard label="Graded results" value={data.totals.finalResults.toLocaleString()} icon={<GraduationCap />} />
+            <StatCard label="Graded" value={data.totals.finalResults.toLocaleString()} icon={<GraduationCap />} />
             <StatCard label="Average score" value={`${data.totals.avgScorePct}%`} icon={<Percent />} />
             <Link to="/admin/moderation" className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={`${data.totals.openFlags} open reports, go to moderation`}>
               <StatCard label="Open reports" value={data.totals.openFlags} hint="Review queue →" icon={<Flag />} className={data.totals.openFlags ? 'border-warning' : undefined} />
