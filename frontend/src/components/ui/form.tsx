@@ -14,10 +14,12 @@ interface FormFieldProps {
   hint?: ReactNode;
   required?: boolean;
   className?: string;
+  /** absolutely-positioned node rendered over the end of the control (e.g. a show-password button) */
+  trailing?: ReactNode;
 }
 
 /** Label + control + hint + error, wired for screen readers. Works with react-hook-form's `register()` spread on the child. */
-export function FormField({ label, children, error, hint, required, className }: FormFieldProps) {
+export function FormField({ label, children, error, hint, required, className, trailing }: FormFieldProps) {
   const uid = useId();
   const id = (children.props.id as string | undefined) ?? `f${uid}`;
   const msg = typeof error === 'string' ? error : error?.message;
@@ -37,7 +39,7 @@ export function FormField({ label, children, error, hint, required, className }:
         {label}
         {required && <span className="ml-0.5 text-accent" aria-hidden="true">*</span>}
       </Label>
-      {control}
+      {trailing ? <div className="relative">{control}{trailing}</div> : control}
       {hint && <p id={hintId} className="text-xs text-muted">{hint}</p>}
       {msg && <p id={errId} role="alert" className="text-xs font-medium text-danger">{msg}</p>}
     </div>

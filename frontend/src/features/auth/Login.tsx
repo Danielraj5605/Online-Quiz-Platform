@@ -42,13 +42,15 @@ export default function Login() {
         <FormField label="Email or username" error={errors.identifier} required>
           <Input autoComplete="username" autoCapitalize="none" spellCheck={false} {...register('identifier')} />
         </FormField>
-        <FormField label="Password" error={errors.password} required>
-          <div className="relative">
-            <Input type={show ? 'text' : 'password'} autoComplete="current-password" className="pr-11" {...register('password')} />
+        <FormField
+          label="Password" error={errors.password} required
+          trailing={
             <button type="button" onClick={() => setShow((s) => !s)} aria-pressed={show} aria-label={show ? 'Hide password' : 'Show password'} className="absolute right-1 top-1/2 grid size-9 -translate-y-1/2 place-items-center rounded-md text-muted hover:text-text">
               {show ? <EyeOff className="size-4" aria-hidden="true" /> : <Eye className="size-4" aria-hidden="true" />}
             </button>
-          </div>
+          }
+        >
+          <Input type={show ? 'text' : 'password'} autoComplete="current-password" className="pr-11" {...register('password')} />
         </FormField>
         <Button type="submit" size="lg" loading={isSubmitting}>Sign in</Button>
       </form>
