@@ -4,7 +4,7 @@ import { api } from './client';
 import type { ReviewsDto } from './types';
 
 export const reviewsApi = {
-  list: (quizId: string) => api.get<ReviewsDto>(`/quizzes/${quizId}/reviews`),
-  save: (quizId: string, input: z.input<typeof reviewSchema>) => api.post<void>(`/quizzes/${quizId}/reviews`, input),
+  list: (quizId: string, query: { page?: number; pageSize?: number } = {}) => api.get<ReviewsDto>(`/quizzes/${quizId}/reviews`, query),
+  save: (quizId: string, input: z.input<typeof reviewSchema>) => api.post<{ id: string; rating: number; comment: string }>(`/quizzes/${quizId}/reviews`, input),
   remove: (quizId: string) => api.del(`/quizzes/${quizId}/reviews`),
 };

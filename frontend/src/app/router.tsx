@@ -5,6 +5,7 @@ import { useAuth } from './auth';
 import { page } from './lazy';
 import { AdminLayout, ParticipantLayout, RoleAwareLayout, StudioLayout, TakingLayout } from '@/components/layout/shell';
 import { ErrorBoundary } from '@/components/layout/error-boundary';
+import { GlobalPolish } from '@/components/polish';
 import { routes as participant, takingRoutes, sharedRoutes } from '@/features/participant/routes';
 import { routes as organizer } from '@/features/organizer/routes';
 import { routes as admin } from '@/features/admin/routes';
@@ -26,7 +27,7 @@ const guarded = (roles: Parameters<typeof RequireRole>[0]['roles'], layout: Reac
 
 export const router = createBrowserRouter([
   {
-    element: <ErrorBoundary><Outlet /></ErrorBoundary>,
+    element: <ErrorBoundary><GlobalPolish /><Outlet /></ErrorBoundary>,
     children: [
       {
         element: <GuestOnly />,

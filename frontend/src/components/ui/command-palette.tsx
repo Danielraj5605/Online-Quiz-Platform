@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/app/auth';
 import { navFor } from '@/app/nav';
 import { useTheme } from '@/app/theme';
+import { openShortcuts } from '@/components/polish/shortcuts-event';
 
 /** ⌘/Ctrl-K palette. Items are role-aware: navigation for the user's area + global actions. Extra commands can be passed in. */
 export interface PaletteAction { id: string; label: string; run: () => void; group?: string; keywords?: string[] }
@@ -28,6 +29,26 @@ export function CommandPalette({ extra = [], open: controlled, onOpenChange }: {
 
   if (!user) return null;
   const go = (to: string) => () => { setOpen(false); navigate(to); };
+  // Key destinations that are not top-level nav entries, per role.
+  const roleActions: PaletteAction[] = user.role === 'PARTICIPANT'
+    ? [
+        { id: 'join-code', label: 'Join a quiz with an access code', run: () => navigate('/join'), keywords: ['code', 'invite'] },
+        { id: 'continue', label: 'Continue where I left off', run: () => navigate('/'), keywords: ['resume', 'attempt'] },
+      ]
+    : user.role === 'ORGANIZER'
+      ? [
+          { id: 'new-quiz', label: 'Create a new quiz', run: () => navigate('/studio/quizzes?new=1'), keywords: ['add', 'draft'] },
+          { id: 'profile', label: 'Open my profile', run: () => navigate('/profile') },
+        ]
+      : [
+          { id: 'open-reports', label: 'Review open reports', run: () => navigate('/admin/moderation'), keywords: ['flag', 'queue'] },
+          { id: 'admin-quizzes', label: 'Browse all quizzes', run: () => navigate('/admin/quizzes') },
+        ];
+  const actions = [
+    ...roleActions,
+    ...extra,
+    { id: 'shortcuts', label: 'Show keyboard shortcuts', run: openShortcuts, keywords: ['help', 'keys', '?'] },
+  ];
   const item = 'flex min-h-10 cursor-pointer items-center gap-3 rounded-md px-3 text-sm aria-selected:bg-surface-2 [&_svg]:size-4 [&_svg]:text-muted';
 
   return (
@@ -44,9 +65,9 @@ export function CommandPalette({ extra = [], open: controlled, onOpenChange }: {
             <Command.Item key={n.to} value={`go ${n.label}`} onSelect={go(n.to)} className={item}><n.icon aria-hidden="true" />{n.label}</Command.Item>
           ))}
         </Command.Group>
-        {extra.length > 0 && (
+        {actions.length > 0 && (
           <Command.Group heading="Actions" className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:text-muted">
-            {extra.map((a) => (
+            {actions.map((a) => (
               <Command.Item key={a.id} value={`${a.label} ${(a.keywords ?? []).join(' ')}`} onSelect={() => { setOpen(false); a.run(); }} className={item}>{a.label}</Command.Item>
             ))}
           </Command.Group>
